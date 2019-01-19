@@ -1,0 +1,36 @@
+@mixin no-wrap { // 不换行
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@mixin extend-click { // 增加点击区域
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+  }
+}
+
+@mixin x-center { // 横轴居中
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@mixin y-center {  // 纵轴居中
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@mixin xy-center {  // 横纵居中
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
