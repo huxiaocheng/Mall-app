@@ -7,19 +7,21 @@
       </div>
     </div>
     <div class='head-search' ref='search'>
-      <head-search />
+      <head-search :isLucency='true'/>
     </div>
     <scroll class='scroll-wrap' 
       :listenScroll='listenScroll' 
       :probeType = 'probeType'
+      :pullup='pullup'
       @scroll='scroll'
+      @scrollEnd='scrollEnd'
     >
       <div>
         <slider :sliderDate='sliderDate'/>
         <floor />
       </div>
     </scroll>
-    <div class='no-more-tips'>
+    <div class='no-more-tips' ref='noMore'>
       没有更多了...
     </div>
   </div>
@@ -48,20 +50,32 @@ export default {
           imgUrl: require('common/img/banner-3.jpg')
         }
       ],
-      listenScroll: true,
-      probeType: 3,
       scrollY: -1,
-      tipsText: '下拉刷新'
+      tipsText: '下拉刷新',
+      maxY: -1
     }
+  },
+  created() {
+    this.listenScroll = true;
+    this.probeType = 3;
+    this.pullup = true;
   },
   methods: {
     scroll(pos) {
       this.scrollY = pos.y;
+    },
+    scrollEnd(maxY) {
+      this.maxY = maxY;
     }
   },
   watch: {
     scrollY(newY) {
-      this.$refs.refresh.style.top = newY - REFRESH_SCROLL_HEIGHT + 'px';
+      if(-newY > -this.maxY) {
+        this.$refs.noMore.style.bottom = `${-newY - -this.maxY + 20}px`;
+      }
+      if(newY < REFRESH_SCROLL_HEIGHT * 2 && newY > 0) {
+        this.$refs.refresh.style.top = newY - REFRESH_SCROLL_HEIGHT + 'px';
+      }
       if(newY > REFRESH_SCROLL_HEIGHT) {
         this.tipsText = '松开刷新';
       } else {
@@ -117,7 +131,7 @@ export default {
   }
   .no-more-tips {
     position: fixed;
-    bottom: 75px;
+    bottom: 40px;
     width: 100%;
     text-align: center;
     font-size: 14px;

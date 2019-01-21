@@ -1,5 +1,5 @@
 <template>
-  <div class='search-wrap'>
+  <div class='search-wrap' :style='{backgroundColor: bg}'>
     <div class='search-left'>
       <div class='scan' v-if='isScan'>
         <i class='iconfont icon-scan'>&#xe607;</i>
@@ -27,11 +27,15 @@ export default {
     cancel: {
       type: Boolean,
       default: false
+    },
+    isLucency: {
+      type: Boolean,
+      default: false
     }
   },
-  data() {
-    return {
-
+  computed: {
+    bg() {
+      return this.isLucency ? 'rgba(0,0,0,0)' : 'rgba(239, 80, 80,1)';
     }
   }
 }
@@ -43,7 +47,6 @@ export default {
     display:flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0,0,0,0);
     padding: 3px 15px 3px 5px;
     .search-left {
       display: flex;

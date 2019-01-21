@@ -10,7 +10,6 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
@@ -19,7 +18,13 @@ module.exports = {
     errorOverlay: true,
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
-
+    inline: true,
+    proxyTable: {
+      '**/*.do': {
+        target: 'http://test.happymmall.com',
+        changeOrigin: true
+      }
+    },
     
     /**
      * Source Maps
