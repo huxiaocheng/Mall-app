@@ -7,11 +7,17 @@
       </div>
     </div>
     <div class='head-search' ref='search'>
-      <head-search :isLucency='true'/>
+      <transition name='fade'>
+        <head-search 
+          :configParam='configParam'
+          @inputClick='inputClick'
+          @cancel='searchCancel'
+        />
+      </transition>
     </div>
     <scroll class='scroll-wrap' 
       :listenScroll='listenScroll' 
-      :probeType = 'probeType'
+      :probeType='probeType'
       :pullup='pullup'
       @scroll='scroll'
       @scrollEnd='scrollEnd'
@@ -32,6 +38,8 @@ import HeadSearch from 'base/head-search/head-search';
 import Slider from 'base/slider/slider';
 import Floor from './components/floor';
 import Scroll from 'base/scroll/scroll'; 
+import TransiBase from 'base/transition-base/transition-base';
+import { mapGetters } from 'vuex';
 
 const REFRESH_SCROLL_HEIGHT = 76;
 
@@ -52,7 +60,14 @@ export default {
       ],
       scrollY: -1,
       tipsText: '下拉刷新',
-      maxY: -1
+      maxY: -1,
+      configParam: {
+        isShowHistory: false,
+        isLucency: true,
+        cancel: false,
+        isShowSearchLeft: true,
+        isScan: true
+      }
     }
   },
   created() {
@@ -61,6 +76,24 @@ export default {
     this.pullup = true;
   },
   methods: {
+    inputClick() {
+      this.configParam = {
+        isShowHistory: true,
+        isLucency: false,
+        cancel: true,
+        isShowSearchLeft: false,
+        isScan: false
+      }
+    },
+    searchCancel() {
+      this.configParam = {
+        isShowHistory: !true,
+        isLucency: !false,
+        cancel: !true,
+        isShowSearchLeft: !false,
+        isScan: !false
+      }
+    },
     scroll(pos) {
       this.scrollY = pos.y;
     },
@@ -93,7 +126,8 @@ export default {
     HeadSearch,
     Slider,
     Floor,
-    Scroll
+    Scroll,
+    TransiBase
   }
 }
 </script>

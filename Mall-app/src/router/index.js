@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Assort from '@/pages/assort/assort';
+import ProductList from '@/pages/product-list/product-list';
 import Home from '@/pages/home/home';
 import MyCenter from '@/pages/mycenter/mycenter';
 import ShopCart from '@/pages/shopcart/shopcart';
@@ -11,19 +11,17 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
       component: Home
-    },{
-      path: '/assort',
-      name: 'Assort',
-      component: Assort
-    },{
+    },
+    {
+      path: '/product-list',
+      component: ProductList
+    },
+    {
       path: '/mycenter',
-      name: 'MyCenter',
       component: MyCenter
     },{
       path: '/shopcart',
-      name: 'ShopCart',
       component: ShopCart
     }
   ]

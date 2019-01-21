@@ -22,11 +22,13 @@ export default {
           name: '首页',
           router: '/',
           icon: '&#xe751;'
-        },{
-          name: '分类',
-          router: '/assort',
-          icon: '&#xe76a;'
-        },{
+        },
+        // {
+        //   name: '商品列表',
+        //   router: '/product-list',
+        //   icon: '&#xe76a;'
+        // },
+        {
           name: '购物车',
           router: '/shopcart',
           icon: '&#xe622;'
