@@ -6,7 +6,7 @@
           <i class='iconfont icon-scan'>&#xe607;</i>
           <span class='scan-text'>扫一扫</span>
         </div>
-        <div class='back' v-if='!configParam.isScan'>
+        <div class='back' v-if='!configParam.isScan' @click='back'>
           <i class='iconfont'>&#xe616;</i>
         </div>
       </div>
@@ -16,9 +16,9 @@
           type="text" 
           class='input' 
           ref='input'
-          :value='keyword'
+          v-model='keyword'
           @focus='searchClick'
-          @keyup.enter.delete='searchProduct'
+          @keyup.enter='handleKeyupEnter'
           :placeholder='placeText'/>
       </div>
       <div class='cencel' v-if='configParam.cancel' @click='searchCancel'>取消</div>
@@ -31,15 +31,15 @@
             <i class='iconfont delete-all' @click='deleteHistory'>&#xe7f5;</i> 
           </div>
           <ul class='history-list'>
-            <li class='history-item' v-for='item in historyList' :key='item'>
-              <span class='name'>{{item}}</span>  
-              <i class='delete-icon'>x</i> 
+            <li class='history-item' v-for='(item,index) in historyList' :key='item + index'>
+              <span class='name' @click='selectItem(item)'>{{item}}</span>  
+              <i class='delete-icon' @click='removeHistoryItem(index)'>x</i> 
             </li>
           </ul>
         </div>
       </scroll>  
     </transi-base>  
-    <confirm  ref='confirm'/>
+    <confirm ref='confirm' @confirm='confirm'/>
   </div>
 </template>
 
@@ -47,12 +47,12 @@
 import Scroll from 'base/scroll/scroll';
 import TransiBase from 'base/transition-base/transition-base';
 import Confirm from 'base/confirm/confirm';
-import { mapMutations, mapGetters } from 'vuex';
+import { mapMutations, mapGetters, mapActions } from 'vuex';
 
 export default {
   data() {
     return {
-      historyList: ['手机','电脑'],
+      keyword: ''
     }
   },
   props: {
@@ -72,10 +72,16 @@ export default {
       return this.configParam.isLucency ? 'rgba(0,0,0,0)' : 'rgba(239, 80, 80,1)';
     },
     ...mapGetters([
-      'keyword'
+      'historyList'
     ])
   },
   methods: {
+    confirm() {
+      this.removeAllHistory([]);
+    },
+    removeHistoryItem(index) {
+      this.removeARecord(index);
+    },
     searchClick() {
       this.$emit('inputClick');
       this.$nextTick(() => {
@@ -90,13 +96,29 @@ export default {
     deleteHistory() {
       this.$refs.confirm.show();
     },
-    searchProduct() {
-      this.$router.push('/product-list');
-      this.setKeyword(this.$refs.input.value);
+    selectItem(item) {
+      this.$emit('inputEnter');
+      this.setKeyword(item || this.placeText);
+      this.addHistory(item || this.placeText);
+      this.searchCancel();
+    },
+    handleKeyupEnter() {
+      this.$emit('inputEnter');
+      this.setKeyword(this.keyword || this.placeText);
+      this.addHistory(this.keyword || this.placeText);
+      this.searchCancel();
+    },
+    back() {
+      this.$emit('back');
     },
     ...mapMutations({
-      setKeyword: 'SET_KEYWORD'
-    })
+      setKeyword: 'SET_KEYWORD',
+      removeAllHistory: 'ADD_HISTORY_LIST'
+    }),
+    ...mapActions([
+      'addHistory',
+      'removeARecord'
+    ])
   },
   components: {
     Scroll,
@@ -139,6 +161,7 @@ export default {
         }
       }
       .back {
+        @include extend-click();
         padding-left: 10px;
         font-size: 22px;
         color: #fff;
@@ -159,6 +182,8 @@ export default {
         left: 10px;
       }
       .input {
+        font-size: 14px;
+        color: #555;
         width: 100%;
         border: none;
         outline: none;

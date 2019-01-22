@@ -8,10 +8,12 @@
     </div>
     <div class='head-search' ref='search'>
       <transition name='fade'>
-        <head-search 
+        <head-search
+          ref='input'
           :configParam='configParam'
           @inputClick='inputClick'
           @cancel='searchCancel'
+          @inputEnter='inputEnter'
         />
       </transition>
     </div>
@@ -39,7 +41,7 @@ import Slider from 'base/slider/slider';
 import Floor from './components/floor';
 import Scroll from 'base/scroll/scroll'; 
 import TransiBase from 'base/transition-base/transition-base';
-import { mapGetters } from 'vuex';
+import { mapGetters,mapMutations, mapActions } from 'vuex';
 
 const REFRESH_SCROLL_HEIGHT = 76;
 
@@ -67,7 +69,7 @@ export default {
         cancel: false,
         isShowSearchLeft: true,
         isScan: true
-      }
+      },
     }
   },
   created() {
@@ -76,6 +78,13 @@ export default {
     this.pullup = true;
   },
   methods: {
+    inputEnter() {
+      // this.setKeyword(keyword);
+      // this.addHistory(keyword);
+      this.$router.push({
+        path: '/product-list'
+      })
+    },
     inputClick() {
       this.configParam = {
         isShowHistory: true,
@@ -92,14 +101,20 @@ export default {
         cancel: !true,
         isShowSearchLeft: !false,
         isScan: !false
-      }
+      };
     },
     scroll(pos) {
       this.scrollY = pos.y;
     },
     scrollEnd(maxY) {
       this.maxY = maxY;
-    }
+    },
+    ...mapMutations({
+      setKeyword: 'SET_KEYWORD'
+    }),
+    ...mapActions([
+      'addHistory'
+    ])
   },
   watch: {
     scrollY(newY) {

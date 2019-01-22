@@ -21,7 +21,7 @@ module.exports = {
     inline: true,
     proxyTable: {
       '**/*.do': {
-        target: 'http://test.happymmall.com',
+        target: 'http://happymmall.com',
         changeOrigin: true
       }
     },

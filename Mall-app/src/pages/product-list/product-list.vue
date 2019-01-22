@@ -1,16 +1,36 @@
 <template>
-  <div>
-    <head-search />
+  <div class='product-list-wrap'>
+    <div class='search-wrap'>
+      <div class='back' @click='back'>
+        <i class='iconfont'>&#xe616;</i>
+      </div>
+      <div class='search-input'>
+        <i class='iconfont icon-search'>&#xe62a;</i>
+        <input 
+          type="text" 
+          class='input' 
+          ref='input'
+          :value='keyword || placeText'
+          @keyup.enter='handleKeyupEnter'
+          placeholder='请输入商品名字'/>
+      </div>
+    </div>
     <ul class='sort-rank'>
-      <li class='sort-item'>综合</li>
-      <li class='sort-item'>价格升序</li>
-      <li class='sort-item'>价格降序</li>
+      <li 
+        class='sort-item' 
+        :class='{active: index === sortIndex}'
+        v-for='(item, index) in sortBtns' 
+        :key='item' 
+        @click='productSort(index)'
+      >
+        {{item}}
+      </li>
     </ul>
-    <scroll class='product-wrap'>
-      <ul class='product-list'>
-        <li class='product-item' v-for='item in list' :key='item.id'>
+    <scroll class='product-wrap' :pullup='pullup' @scrollEnd='scrollEnd' ref='scroll'>
+      <ul class='product-list' v-show='list.length > 0'>
+        <li class='product-item' v-for='(item,index) in list' :key='index'>
           <div class='product-img-show'>
-            <img class='img' :src="item.imageHost + item.mainImage" alt="">
+            <img class='img' v-lazy="item.imageHost + item.mainImage" alt="">
           </div>
           <div class='product-desc'>
             <span class='name'>
@@ -24,50 +44,107 @@
             </span>
           </div>
         </li>
+        <li class='product-last-tips'>{{upScrollTips}}</li>  
       </ul>
+      <div class='no-goods' v-show='!list.length && !hasMore'>
+        抱歉没有找到您需要的商品。
+      </div>
+      <div class='loading-wrap'>
+        <loading v-show='!list.length && hasMore'/>
+      </div> 
     </scroll>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import HeadSearch from 'base/head-search/head-search';
+import { mapGetters, mapMutations, mapActions } from 'vuex';
 import Scroll from 'base/scroll/scroll';
+import Loading from 'base/loading/loading';
 import { getProductList } from 'api/product';
 import { ERR_OK } from 'api/require';
 
 export default {
   data() {
     return {
-      data: {
+      sortBtns: ['综合','价格升序','价格降序'],
+      sortIndex: 0,
+      list: [],
+      hasMore: true,
+      getParams: {
         keyword: '',
-        orderBy: '',
+        orderBy: 'default',
         pageNum: 1,
         pageSize: 10
-      },
-      list: []
+      }
     }
   },
   created() {
+    this.pullup = true;
     setTimeout(() => {
-      console.log(this.keyword)
-      this._getProductlist();
+      this.getParams.keyword = this.keyword;
+      this._getProductlist(this.getParams);
     }, 20)
   },
   computed: {
+    upScrollTips() {
+      return this.hasMore ? '正在加载...' : '没有更多了' 
+    },
+    placeText() {
+      const arr = ['手机', '键盘', '电脑', '护肤品', '冰箱', '玩具'];
+      return arr[Math.floor(Math.random() * arr.length)];
+    },
     ...mapGetters([
       'keyword'
     ])
   },
   methods: {
-    _getProductlist() {
-      getProductList(this.data).then(res => {
-        if(res.status === ERR_OK) {
-          this.list = this._normalizeList(res.data.list);
+    productSort(index) {
+      this.sortIndex = index;
+      if(index === 0) {
+        if (this.getParams.orderBy === 'default') {
+          return;
         }
-      }).catch(ex => {
-        console.log(ex);
-      })
+        this.getParams.orderBy = '';
+      } else if (index === 1) {
+        this.getParams.orderBy = 'price_asc';
+      } else if (index === 2) {
+        this.getParams.orderBy = 'price_desc';
+      }
+      this.handleKeyupEnter();
+    },
+    scrollEnd() {
+      setTimeout(() => {
+        this._getProductlist();
+      }, 20);
+    },
+    handleKeyupEnter() {
+      this.hasMore = true;
+      this.getParams.keyword = this.$refs.input.value;
+      this.getParams.pageNum = 1;
+      this.list = [];
+      this.setKeyword(this.$refs.input.value);
+      this.addHistory(this.$refs.input.value);
+      this._getProductlist(this.getParams);
+    },
+    back() {
+      this.$router.back();
+      this.$destroy();
+    },
+    _getProductlist() {
+      if(this.hasMore && this.getParams.keyword) {
+        getProductList(this.getParams).then(res => {
+          this.getParams.pageNum++;
+          if(res.status === ERR_OK) {
+            this.list = this.list.concat(this._normalizeList(res.data.list));
+            setTimeout(() => {
+              this.$refs.scroll.refresh();
+            }, 20);
+            this.hasMore = res.data.hasNextPage;
+          }
+        }).catch(ex => {
+          console.log(ex);
+        })
+      }
     },
     _normalizeList(list) {
       const ret = [];
@@ -78,16 +155,69 @@ export default {
         ret.push(v);
       });
       return ret;
-    }
+    },
+    ...mapMutations({
+      setKeyword: 'SET_KEYWORD'
+    }),
+    ...mapActions([
+      'addHistory'
+    ])
   },
   components: {
-    HeadSearch,
-    Scroll
+    Scroll,
+    Loading
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import '~common/scss/mixins.scss';
+
+.search-wrap {
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 15px 3px 5px;
+    height: 50px;
+    background: rgba(239, 80, 80,1);
+    .back {
+      padding-left: 10px;
+      font-size: 22px;
+      color: #fff;
+      @include extend-click();
+    }
+    .search-input {
+      position: relative;
+      display: flex;
+      flex: 1;
+      height: 30px;
+      padding-left: 35px;
+      border-radius: 15px;
+      margin-left: 10px;
+      overflow: hidden;
+      background: #fff;
+      .icon-search {
+        @include y-center();
+        left: 10px;
+      }
+      .input {
+        font-size: 14px;
+        color: #555;
+        width: 100%;
+        border: none;
+        outline: none;
+        background: #fff;
+      }
+    }
+  }
+.product-list-wrap {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 999;
+  background: #fff;
+}
 .sort-rank {
   display: flex;
   height: 40px;
@@ -106,11 +236,15 @@ export default {
 }
 .product-wrap {
   position: fixed;
-  top: 116px;
-  bottom: 55px;
+  top: 97px;
+  bottom: 0px;
   width: 100%;
   overflow: hidden;
   .product-list {
+    box-sizing: border-box;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    min-height: 101%;
     .product-item {
       display: flex;
       padding: 0 10px 20px 10px;
@@ -177,6 +311,23 @@ export default {
         }
       }
     }
+    .product-last-tips {
+      height: 30px;
+      line-height: 30px;
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+    }
+  }
+  .no-goods {
+    color: #666;
+    font-size: 14px;
+    height: 101%;
+    text-align: center;
+    margin-top: 50px;
+  }
+  .loading-wrap {
+    margin-top: 50px;
   }
 }
 </style>

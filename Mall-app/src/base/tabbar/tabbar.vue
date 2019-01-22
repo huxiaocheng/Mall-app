@@ -20,7 +20,7 @@ export default {
       bars: [
         {
           name: '首页',
-          router: '/',
+          router: '/home',
           icon: '&#xe751;'
         },
         // {

@@ -1,5 +1,6 @@
 const state = {
-  keyword: ''
+  keyword: '',
+  historyList: []
 };
 
 export default state;
