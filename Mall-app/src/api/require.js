@@ -5,7 +5,8 @@ export function require(param) {
     return axios({
       method: param.method || 'get',
       url: param.url,
-      params: param.params || ''
+      params: param.params || '',
+      data: param.data || ''
     }).then(res => {
       resolve(res.data);
     }).catch(ex => {

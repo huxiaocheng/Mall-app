@@ -28,7 +28,7 @@
     </ul>
     <scroll class='product-wrap' :pullup='pullup' @scrollEnd='scrollEnd' ref='scroll'>
       <ul class='product-list' v-show='list.length > 0'>
-        <li class='product-item' v-for='(item,index) in list' :key='index'>
+        <li @click='selectItem(item.id)' class='product-item' v-for='(item,index) in list' :key='index'>
           <div class='product-img-show'>
             <img class='img' v-lazy="item.imageHost + item.mainImage" alt="">
           </div>
@@ -99,6 +99,11 @@ export default {
     ])
   },
   methods: {
+    selectItem(id) {
+      this.$router.push({
+        path: `/product-list/${id}`
+      })
+    },
     productSort(index) {
       this.sortIndex = index;
       if(index === 0) {

@@ -144,12 +144,6 @@ export default {
              title: '卡西欧（CASIO）EX-TR750 数码相机（3.5英寸大屏、双LED灯，天使之眼）美颜自拍神器 静谧黑',
              subtitle: '3.5英寸大屏、9000+微调，六大美颜功能、四种美肤模式'
            }
-          //  , {
-          //    id: 2699,
-          //    imgUrl: require('common/img/floor/floor5-5.jpg'),
-          //    title: '进口洋酒威士忌酒原瓶原装BLACK',
-          //    subtitle: 'RAM黑公羊威士忌whisky调酒基酒'
-          //  }
          ] 
        }
      ]

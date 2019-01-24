@@ -24,8 +24,8 @@ export default {
           icon: '&#xe751;'
         },
         {
-          name: '商品详情',
-          router: '/product-detail',
+          name: '注册',
+          router: '/register',
           icon: '&#xe76a;'
         },
         {

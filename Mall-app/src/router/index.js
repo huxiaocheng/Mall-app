@@ -5,6 +5,8 @@ import Home from '@/pages/home/home';
 import MyCenter from '@/pages/mycenter/mycenter';
 import ShopCart from '@/pages/shopcart/shopcart';
 import ProductDetail from '@/pages/product-detail/product-detail';
+import Login from 'pages/login/login';
+import Register from 'pages/register/register';
 
 Vue.use(Router)
 
@@ -37,9 +39,18 @@ export default new Router({
     {
       path: '/mycenter',
       component: MyCenter
-    },{
+    },
+    {
       path: '/shopcart',
       component: ShopCart
+    }, 
+    {
+      path: '/login',
+      component: Login
+    },
+    {
+      path: '/register',
+      component: Register
     }
   ]
 })
