@@ -53,6 +53,7 @@
         <loading v-show='!list.length && hasMore'/>
       </div> 
     </scroll>
+    <router-view/>
   </div>
 </template>
 

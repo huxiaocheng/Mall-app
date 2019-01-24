@@ -6,3 +6,12 @@ export function getProductList(data) {
     params: data
   })
 }
+
+export function getProductDetail(id) {
+  return require({
+    url: '/product/detail.do',
+    params: {
+      productId: id
+    }
+  })
+}

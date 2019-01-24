@@ -32,6 +32,7 @@
     <div class='no-more-tips' ref='noMore'>
       没有更多了...
     </div>
+    <router-view/>
   </div>
 </template>
 
@@ -79,8 +80,6 @@ export default {
   },
   methods: {
     inputEnter() {
-      // this.setKeyword(keyword);
-      // this.addHistory(keyword);
       this.$router.push({
         path: '/product-list'
       })
@@ -108,13 +107,7 @@ export default {
     },
     scrollEnd(maxY) {
       this.maxY = maxY;
-    },
-    ...mapMutations({
-      setKeyword: 'SET_KEYWORD'
-    }),
-    ...mapActions([
-      'addHistory'
-    ])
+    }
   },
   watch: {
     scrollY(newY) {

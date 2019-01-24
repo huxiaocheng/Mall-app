@@ -23,11 +23,11 @@ export default {
           router: '/home',
           icon: '&#xe751;'
         },
-        // {
-        //   name: '商品列表',
-        //   router: '/product-list',
-        //   icon: '&#xe76a;'
-        // },
+        {
+          name: '商品详情',
+          router: '/product-detail',
+          icon: '&#xe76a;'
+        },
         {
           name: '购物车',
           router: '/shopcart',

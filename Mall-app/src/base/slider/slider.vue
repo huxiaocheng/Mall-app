@@ -5,8 +5,11 @@
         <img :src="item.imgUrl" alt="">
       </router-link>
     </ul>
-    <div class='dots'>
-      <span class='dot' :class='{active: index === currentPageIndex}' v-for='(item, index) in dots'></span>
+    <div class='dots' v-if='!dotsNumber'>
+      <span class='dot' :class='{active: index === currentPageIndex}' v-for='(item, index) in dots' :key='index'></span>
+    </div>
+    <div class='dotsNumber' v-if='dotsNumber'>
+      <span>{{currentPageIndex + 1}} / {{dots.length}}</span>
     </div>
   </div>
 </template>
@@ -21,6 +24,10 @@ export default {
       default() {
         return []
       }
+    },
+    dotsNumber: {
+      type: Boolean,
+      default: false
     },
     loop: {
       type: Boolean,
@@ -94,7 +101,9 @@ export default {
         let pageIndex = this.slider.getCurrentPage().pageX;
         this.currentPageIndex = pageIndex;
         clearTimeout(this.timer);
-        this.play();
+        if(this.autoPlay) {
+          this.play();
+        }
       })
 
     },
@@ -153,6 +162,15 @@ export default {
         background: #fff;
       }
     }
+  }
+  .dotsNumber {
+    position: absolute;
+    right: 20px;
+    bottom: 10px;
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    background: rgba(0,0,0,.3);
   }
 }
 </style>

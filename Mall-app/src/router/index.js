@@ -4,6 +4,7 @@ import ProductList from '@/pages/product-list/product-list';
 import Home from '@/pages/home/home';
 import MyCenter from '@/pages/mycenter/mycenter';
 import ShopCart from '@/pages/shopcart/shopcart';
+import ProductDetail from '@/pages/product-detail/product-detail';
 
 Vue.use(Router)
 
@@ -15,11 +16,23 @@ export default new Router({
     },
     {
       path: '/home',
-      component: Home
+      component: Home,
+      children: [
+        {
+          path: ':id',
+          component: ProductDetail
+        }
+      ]
     },
     {
       path: '/product-list',
-      component: ProductList
+      component: ProductList,
+      children: [
+        {
+          path: ':id',
+          component: ProductDetail
+        }
+      ]
     },
     {
       path: '/mycenter',
