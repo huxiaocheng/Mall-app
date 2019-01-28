@@ -42,6 +42,7 @@ export default {
       this.isShow = true;
     },
     hide() {
+      this.$emit('cancel');
       this.isShow = false;
     },
     confirm() {

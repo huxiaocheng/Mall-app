@@ -145,7 +145,7 @@ export default {
           }, 20);
           this.hasMore = res.data.hasNextPage;
         }).catch(ex => {
-          console.log(ex);
+          this.$notice(ex);
         })
       }
     },

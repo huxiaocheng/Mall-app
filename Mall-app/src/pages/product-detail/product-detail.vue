@@ -43,8 +43,8 @@
               {{productInfo.name}}
             </p>
             <p class='sub-title'>
-              <span>{{productInfo.subtitle}}</span>
-              <span>库存: {{productInfo.stock}}</span>
+              <span class='sub'>{{productInfo.subtitle}}</span>
+              <span class='stock'>库存: {{productInfo.stock}}</span>
             </p>
           </div>
           <div ref='detail' class='product-detail'>
@@ -58,9 +58,29 @@
           <i class='iconfont icon-cart'>&#xe622;</i>
           <span class='num'>1</span>
         </div>
-        <div class='add-btn'>加入购物车</div>
+        <div class='add-btn' @click='addProduct'>加入购物车</div>
       </div>
-    </div> 
+      <transition name='up'>
+        <div class='cart-count-wrap' v-show='showCartCount'>
+          <div class='close-cart-count' @click='packUpCartCount'>
+            <i class='iconfont'>&#xe628;</i>
+          </div>
+          <div class='add-cart-info'>
+            <div class='img-box'>
+              <img class='go-cart-img' :src="productInfo.imageHost+productInfo.mainImage" alt="">
+            </div>
+            <p class='go-cart-price'>￥:{{productInfo.price}}</p>
+          </div>
+          <div class='input-count'>
+            <span @click='handleCartCount(-1)'>-</span>
+            <input v-model='cartCount' type="text">
+            <span @click='handleCartCount(1)'>+</span>
+          </div>
+          <div class='confirm-add' @click='addToCart'>确定</div>
+        </div>
+      </transition>
+      <confirm cancelBtn='返回' confirmBtn='查看' title='添加成功, 是否去购物车查看？' ref='toCartConfrim' @confirm='toCartLook' @cancel='backProductList'/>
+    </div>
   </transi-base>
   
 </template>
@@ -69,7 +89,9 @@
 import Scroll from 'base/scroll/scroll';
 import Slider from 'base/slider/slider';
 import TransiBase from 'base/transition-base/transition-base';
+import Confirm from 'base/confirm/confirm';
 import { getProductDetail } from 'api/product';
+import { addProductToCart } from 'api/cart';
 
 const TOP_HEAD_HEIGHT = 56;
 
@@ -80,7 +102,9 @@ export default {
       scrollY: -1,
       curIndex: 0,
       switches: ['商品', '详情'],
-      productInfo: {}
+      productInfo: {},
+      showCartCount: false,
+      cartCount: 1
     }
   },
   created() {
@@ -95,11 +119,13 @@ export default {
     sliderDate() {
       if(Object.keys(this.productInfo).length > 0) {
         const ret = [];
-        this.productInfo.subImages.split(',').forEach((v, i) => {
-          ret[i] = {};
-          ret[i].imgUrl = this.productInfo.imageHost + v;
-          ret[i].router = '';
-        })
+        if(typeof this.productInfo.subImages === 'string') {
+          this.productInfo.subImages.split(',').forEach((v, i) => {
+            ret[i] = {};
+            ret[i].imgUrl = this.productInfo.imageHost + v;
+            ret[i].router = '';
+          })
+        }
         return ret;
       }
     },
@@ -111,6 +137,32 @@ export default {
     }
   },
   methods: {
+    backProductList() {
+      this.$router.back();
+    },
+    toCartLook() {
+      this.$router.push({path: '/shopcart'});
+    },
+    addToCart() {
+      addProductToCart(this.$route.params.id, this.cartCount).then(res => {
+        this.$refs.toCartConfrim.show();
+      }).catch(ex => {
+        console.log(ex);
+      })
+    },
+    handleCartCount(num) {
+      if (num === -1 && this.cartCount > 1) {
+        this.cartCount--;
+      } else if (num === 1 && this.cartCount < this.productInfo.stock) {
+        this.cartCount++;
+      }
+    },
+    packUpCartCount() {
+      this.showCartCount = false;
+    },
+    addProduct() {
+      this.showCartCount = true;
+    },
     scroll(pos) {
       this.scrollY = pos.y;
     },
@@ -121,7 +173,7 @@ export default {
     selectSwitchItem(index) {
       this.curIndex = index;
       if(index === 0) {
-        this.$refs.detailWrap.scrollTo(0,0, 1000);
+        this.$refs.detailWrap.scrollTo(0, 0, 1000);
       } else if (index === 1) {
         this.$refs.detailWrap.scrollToElement(this.$refs.detail, 1000);
       }
@@ -151,7 +203,8 @@ export default {
   components: {
     Scroll,
     Slider,
-    TransiBase
+    TransiBase,
+    Confirm
   }
 }
 </script>
@@ -266,7 +319,14 @@ export default {
         justify-content: space-between;
         padding: 5px 10px 0px 5px;
         font-size: 14px;
-        color: #666
+        color: #666;
+        .sub {
+          width: 80%;
+        }
+        .stock {
+          flex: 1;
+          text-align: right;
+        }
       }
     }
     .product-detail {
@@ -325,5 +385,82 @@ export default {
     border-radius: 50%;
     z-index: 99;
     background: rgba(0,0,0,.3);
+  }
+  .up-enter-active, .up-leave-active {
+    transition: .3s all ease-in;
+  }
+  .up-leave-to, .up-enter {
+    transform: translate3d(0, 200px, 0);
+  }
+  .cart-count-wrap {
+    position: fixed;
+    height: 200px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -3px 10px 0 #ddd;
+    z-index: 99;
+    .close-cart-count {
+      float: right;
+      padding: 10px;
+    }
+    .add-cart-info {
+      display: flex;
+      align-items: flex-end;
+      padding: 10px 20px;
+      .img-box {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        border: 1px solid #ddd;
+        .go-cart-img {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          /* @include xy-center(); */
+          display: block;
+          width: auto;
+          height: auto;
+          max-width: 100%;
+          max-height: 100%;
+        }
+      }
+      .go-cart-price {
+        font-size: 20px;
+        margin-left: 10px;
+        color:#ef5050;
+      }
+    }
+    .input-count {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      > span {
+        padding: 5px 10px;
+        color: 18px;
+        font-weight: 600;
+        @include extend-click();
+      }
+      > input {
+        width: 30px;
+        background: #ddd;
+        text-align: center;
+        outline: none;
+        border-radius: 5px;
+      }
+    }
+    .confirm-add {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      color: #fff;
+      background: #ef5050;
+    }
   }
 </style>

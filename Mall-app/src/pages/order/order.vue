@@ -12,55 +12,139 @@
         {{item}}
       </li>
     </ul>
-    <ul class='order-list'>
-      <li class='order-item'>
-
-      </li>  
-    </ul>
+    <scroll class='order-list-scroll' :data='orderList' ref='scroll'>
+      <ul class='order-list' v-if='orderList.length > 0'>
+        <li class='order-item' v-for='(item, index) in orderList' :key='item.createTime'>
+          <p class='order-status'>{{item.statusDesc}}</p>
+          <div class='order-info'>
+            <img class='img' :src="item.imageHost+item.orderItemVoList[0].productImage" alt="" />
+            <span class='text'>{{item.orderItemVoList[0].productName}}</span>
+          </div>
+          <div class='order-detail-info'>
+            <div class='detail-btn' @click='lookCurOrder(index)'>
+              查看详情<i class='iconfont icon-more'>&#xe62f;</i>
+            </div>
+            <p class='price'>共{{item.orderItemVoList[0].quantity}}件商品，一共<span> {{item.orderItemVoList[0].totalPrice}} </span>元</p>
+          </div>
+          <div class='order-pay' v-if='item.statusDesc === "未付款"'>
+            <p class='pay-btn'>去支付</p>
+          </div>
+          <ul class='detail-list' v-show='index === orderIndex'>
+            <li class='detail-item'><i class='iconfont'>&#xe67c;</i>订单编号: {{item.orderNo}}</li>
+            <li class='detail-item'><i class='iconfont'>&#xe60e;</i>创建时间: {{item.createTime}}</li>
+            <li class='detail-item'><i class='iconfont'>&#xe655;</i>收件人：{{item.shippingVo.receiverName}}</li>
+            <li class='detail-item'><i class='iconfont'>&#xe64e;</i>收货地址：{{`${item.shippingVo.receiverProvince}-${item.shippingVo.receiverCity}-${item.shippingVo  .receiverAddress}`}}</li>
+            <li class='detail-item'><i class='iconfont'>&#xe66b;</i>电话：{{item.shippingVo.receiverMobile}}</li>
+            <li class='detail-item'><i class='iconfont'>&#xe8f9;</i>支付方式：{{item.paymentTypeDesc}}</li>
+            <li class='detail-item cancel'>
+              <p class='up' @click='packUpDetail'>收起<i class='iconfont icon-up'>&#xe624;</i></p>  
+              <p class='order-cancel-btn' v-if='item.statusDesc === "未付款"' @click='cancelCurOrder(item.orderNo)'>取消订单</p>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <div class='no-order' v-show='!orderList.length && isNoMore'>
+        还没有相关订单
+      </div>
+      <div class='loading-wrap' v-show='!orderList.length && !isNoMore'>
+        <loading></loading>
+      </div>
+    </scroll>
+    <confirm ref='confirm' @confirm='confrim'/>
   </div>
 </template>
 
 <script>
+import Loading from 'base/loading/loading';
 import Scroll from 'base/scroll/scroll';
-import { getOrderList } from 'api/order';
+import { getOrderList, cancelOrder } from 'api/order';
+import Confirm from 'base/confirm/confirm';
 
 export default {
-  name: 'order',
   data() {
     return {
-      switchList: ['全部','待付款','已发货','已取消','已支付'],
-      curIndex: 0
+      orderList: [],
+      switchList: ['全部', '待付款', '已发货', '已取消', '已支付'],
+      curIndex: 0,
+      orderIndex: '',
+      isNoMore: false
     }
   },
   created() {
-    this._getOrderList();
+    setTimeout(() => {
+      this._getOrderList();
+    }, 20);
+    this.orderNum = 0;
   },
   methods: {
+    packUpDetail() {
+      this.orderIndex = '';
+    },
+    lookCurOrder(index) {
+      this.orderIndex = index;
+      this.$refs.scroll.refresh();
+    },
     selectOrderType(index) {
       this.curIndex = index;
+      this.isNoMore = false;
+      this._getOrderList();
+    },
+    cancelCurOrder(num) {
+      this.orderNum = num;
+      this.$refs.confirm.show();
+    },
+    confrim() {
+      cancelOrder(this.orderNum).then(res => {
+        this.$notice('订单取消成功');
+        this.orderNum = 0;
+      }).catch(ex => {
+        this.$notice(ex);
+      })
+    },
+    _orderType(list, type) {
+      if(list && list.length > 0) {
+        return list.filter(v => {
+          return v.statusDesc === type;
+        })
+      }
     },
     _getOrderList() {
-      getOrderList(
-        1,
-        10
-      ).then(res => {
+      getOrderList(1,10).then(res => {
         if(res === 'not-login') {
           this.$router.push('/login');
         }
-        console.log(res);
+        const list = res.data.list;
+        if(this.curIndex === 1) {
+          this.orderList = this._orderType(list, '未支付');
+        } else if(this.curIndex === 2) {
+          this.orderList = this._orderType(list, '已发货');
+        } else if(this.curIndex === 3) {
+          this.orderList = this._orderType(list, '已取消');
+        } else if(this.curIndex === 4){
+          this.orderList = this._orderType(list, '已支付');
+        } else {
+          this.orderList = res.data.list;
+        }
+        if(this.orderList.length === 0) {
+          this.isNoMore = true;
+        }
+        this.$refs.scroll.refresh();
       }).catch(ex => {
         this.$notice(ex);
       });
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Loading,
+    Confirm
   }
 }
 </script>
 
 <style lang="scss" scoped>
   .order-wrap {
+    background: #f8f8f8;
     .page-title {
       display: flex;
       justify-content: center;
@@ -75,11 +159,132 @@ export default {
       justify-content: space-around;
       height: 40px;
       line-height: 40px;
+      border-bottom: 1px solid #cdcdcd;
+      outline: 10px solid #f8f8f8;
+      background: #fff;
       .switch-item {
+        position: relative;
+        bottom: -1px;
+        color: #666;
         &.active {
           color: #ef5050;
           border-bottom: 2px solid #ef5050;
         }
+      }
+    }
+    .order-list-scroll {
+      position: fixed;
+      top: 107px;
+      bottom: 0;
+      width: 100%;
+      overflow: hidden;
+      background: #f8f8f8;
+      .order-list {
+        .order-item {
+          margin-bottom: 10px;
+          background: #fff;
+          font-size: 14px;
+          .order-status {
+            padding-right: 20px;
+            height: 35px;
+            line-height: 35px;
+            color: #ef5050;
+            text-align: right;
+          }
+          .order-info {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f8f8;
+            .img {
+              display: inline-block;
+              margin-right: 10px;
+              flex: 0 0 60px;
+              width: 60px;
+              height: 60px;
+            }
+            .text {
+              padding-right: 10px;
+              text-indent: 30px;
+              font-size: 14px;
+              line-height: 16px;
+              color: #666;
+            }
+          }
+          .order-detail-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px; 
+            color: #666;
+            border-bottom: 1px solid #f1f1f1;
+            .detail-btn{
+              .icon-more {
+                margin-left: 5px;
+                font-size: 12px;
+              }
+            }
+            .price {
+              span {
+                font-size: 16px;
+                font-weight: 600;
+              }
+            }
+          }
+          .order-pay {
+            overflow: hidden;
+            padding: 10px 20px;
+            border-bottom: 1px solid #f1f1f1;
+            .pay-btn {
+              display: block;
+              float: right;
+              padding: 8px 20px;
+              border: 1px solid #ef5050;
+              border-radius: 30px;
+              color: #ef5050;
+            }
+          }
+          .detail-list {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            color: #666;
+            .detail-item {
+              padding: 10px 20px;
+              border: 1px solid #fafafa;
+              &.cancel {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              }
+              .iconfont {
+                  margin-right: 10px;
+                }
+              .up {
+                .icon-up {
+                  margin-left: 10px;
+                  font-size: 14px;
+                } 
+              }
+              .order-cancel-btn {
+                display: block;
+                float: right;
+                padding: 8px 20px;
+                border: 1px solid #ef5050;
+                border-radius: 30px;
+                color: #ef5050;
+              }
+            }
+          }
+        }
+      }
+      .loading-wrap {
+        margin-top: 50px;
+      }
+      .no-order {
+        margin-top: 50px;
+        font-size: 14px;
+        color: #666;
+        text-align: center;
       }
     }
   }
