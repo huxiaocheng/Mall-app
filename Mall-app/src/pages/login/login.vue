@@ -1,30 +1,38 @@
 <template>
-  <div class='login-wrap'>
-    <span class='back' @click='back'>x</span>
-    <div class='login'>
-      <img src="../../common/img/load.jpg" alt="">
-    </div>
-    <div class='input-wrap'>
-      <div class='input-item'>
-        <input class='input' v-model.trim='username' type="text" placeholder="用户名">
-        <span @click='hideUsername' v-show='username && username.length > 0' class='cancel-input'>x</span>
+  <transi-base>
+    <div class='login-wrap'>
+      <div class='title'>
+        <span class='back' @click='back'>
+          <i class='iconfont'>&#xe616;</i>
+        </span>
+        <span class='text'>登录</span>
       </div>
-      <div class='input-item'>
-        <input class='input' v-model.trim='password' type="password" placeholder="请输入密码">
-        <span @click='hidePassword' v-show='password && password.length > 0' class='cancel-input'>x</span>
+      <div class='login'>
+        <img src="../../common/img/load.jpg" alt="">
+      </div>
+      <div class='input-wrap'>
+        <div class='input-item'>
+          <input class='input' v-model.trim='username' type="text" placeholder="用户名">
+          <span @click='hideUsername' v-show='username && username.length > 0' class='cancel-input'>x</span>
+        </div>
+        <div class='input-item'>
+          <input class='input' v-model.trim='password' type="password" placeholder="请输入密码">
+          <span @click='hidePassword' v-show='password && password.length > 0' class='cancel-input'>x</span>
+        </div>
+      </div>
+      <transition name='fade'>
+        <div class='login-btn' @click='handleUserLogin' :style='inputStatus'>登录</div>
+      </transition>
+      <div class='other-link'>
+        <router-link tag='span' to='/find-pwd'>忘记密码</router-link>
+        <router-link tag='span' to='/register'>免费注册</router-link>
       </div>
     </div>
-    <transition name='fade'>
-      <div class='login-btn' @click='handleUserLogin' :style='inputStatus'>登录</div>
-    </transition>
-    <div class='other-link'>
-      <router-link tag='span' to='/find-password'>忘记密码</router-link>
-      <router-link tag='span' to='/register'>免费注册</router-link>
-    </div>
-  </div>
+  </transi-base>
 </template>
 
 <script>
+import TransiBase from 'base/transition-base/transition-base';
 import { userLogin } from 'api/user';
 
 export default {
@@ -42,7 +50,7 @@ export default {
       userLogin({username: this.username,password: this.password}).then(res => {
         this.$router.back();
       }).catch(ex => {
-
+        this.$notice(ex);
       })
     },
     hideUsername() {
@@ -63,6 +71,9 @@ export default {
         return 'opacity: 0.6';
       }
     }
+  },
+  components: {
+    TransiBase
   }
 }
 </script>
@@ -76,12 +87,24 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 999;
     background: #fff;
-    .back {
-      display: inline-block;
-      margin: 20px 0 30px 25px;
-      font-size: 26px;
-      color: #666;
+    .title {
+      text-align: center;
+      margin: 20px 0 30px 0;
+      .back {
+        position: absolute;
+        left: 20px;
+        top: 10px;
+        display: inline-block;
+        font-size: 26px;
+        color: #666;
+      }
+      .text {
+        font-weight: 600;
+        color: #666;
+        font-size: 16px;
+      }
     }
     .login {
       display: flex;

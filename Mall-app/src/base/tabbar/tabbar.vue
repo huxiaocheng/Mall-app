@@ -24,8 +24,8 @@ export default {
           icon: '&#xe751;'
         },
         {
-          name: '注册',
-          router: '/register',
+          name: '订单',
+          router: '/order',
           icon: '&#xe76a;'
         },
         {
@@ -55,6 +55,7 @@ export default {
     width: 100%;
     box-shadow: 0 -3px 10px 0 rgba(0,0,0,.1);
     background: #fff;
+    z-index: 1;
     .bar-item {
       display: flex;
       flex-direction: column;

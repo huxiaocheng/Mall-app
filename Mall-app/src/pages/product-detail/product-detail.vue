@@ -1,5 +1,5 @@
 <template>
-  <transition name='slide'>
+  <transi-base name='slide'>
     <div class='product-detail-wrap'>
       <div class='back-btn' @click='back' ref='back'>
         <i class='iconfont'>&#xe616;</i>
@@ -61,7 +61,7 @@
         <div class='add-btn'>加入购物车</div>
       </div>
     </div> 
-  </transition>
+  </transi-base>
   
 </template>
 
@@ -70,7 +70,6 @@ import Scroll from 'base/scroll/scroll';
 import Slider from 'base/slider/slider';
 import TransiBase from 'base/transition-base/transition-base';
 import { getProductDetail } from 'api/product';
-import { ERR_OK } from 'api/require';
 
 const TOP_HEAD_HEIGHT = 56;
 
@@ -129,9 +128,7 @@ export default {
     },
     _getProductDetail() {
       getProductDetail(this.$route.params.id).then(res => {
-        if (res.status === ERR_OK) {
-          this.productInfo = res.data;
-        }
+        this.productInfo = res.data;
       }).catch(ex => {
         console.log(ex);
       })
@@ -328,11 +325,5 @@ export default {
     border-radius: 50%;
     z-index: 99;
     background: rgba(0,0,0,.3);
-  }
-  .slide-enter-active, .slide-leave-active {
-    transition: all .3s;
-  }
-  .slide-enter, .slide-leave-to {
-    transform: translate3d(100%, 0, 0,);
   }
 </style>

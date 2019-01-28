@@ -32,9 +32,6 @@
 import Scroll from 'base/scroll/scroll';
 
 export default {
-  created() {
-    
-  },
   data() {
     return {
       curIndex: '',

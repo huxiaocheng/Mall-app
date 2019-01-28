@@ -4,7 +4,7 @@ import store from './store'
 import router from './router'
 import fastclick from 'fastclick';
 import VueLazyLoad from 'vue-lazyload';
-import Notice from 'base/notice/notice.js'
+import Notice from 'base/notice/notice.js';
 
 import 'common/scss/base.scss';
 import 'common/iconfont/iconfont.css';

@@ -1,9 +1,13 @@
 <template>
+<transi-base nama='slide'>
   <scroll class='login-wrap' :click='false'>
     <div>
-      <span class='back' @click='back'>
-        <i class='iconfont'>&#xe628;</i>
-      </span>
+      <div class='title'>
+        <span class='back' @click='back'>
+          <i class='iconfont'>&#xe616;</i>
+        </span>
+        <span class='text'>注册</span>
+      </div>
       <ul class='input-wrap'>
         <li class='input-item' v-for='(item, index) in registerInfo' :key='index'>
           <input v-if='index === 0' @blur='testUsername(item.name)' class='input' v-model.trim='item.name' :type="item.type" :placeholder="item.placeholder">
@@ -17,10 +21,12 @@
       </div>
     </div>
   </scroll>
+  </transi-base>
 </template>
 
 <script>
 import Scroll from 'base/scroll/scroll';
+import TransiBase from 'base/transition-base/transition-base';
 import { userRegister, checkRegisterUsername } from 'api/user';
 
 export default {
@@ -69,10 +75,13 @@ export default {
       if (this.registerInfo.every(v => v.name !== '')) {
         const result = this.fromValidata(this.changeUserInfo);
         if (result.status) {
-          userRegister(this.changeUserInfo).then(res => {
+          userRegister(this.changeUserInfo)
+          .then(res => {
+            this.$destroy();
             this.$router.push('/login');
-          }).catch(ex => {
-            console.log(ex);
+          })
+          .catch(ex => {
+            this.$notice(ex);
           })
         } else {
           this.$notice(result.msg)
@@ -89,9 +98,8 @@ export default {
     testUsername(username) {
       if(username !== '') {
         checkRegisterUsername({type: 'username', str: username}).then(res => {
-          
         }).catch(ex => {
-          console.log(ex)
+          this.$notice(ex);
         })
       }
     },
@@ -124,6 +132,7 @@ export default {
       return result;
     },
     back() {
+      this.$destroy();
       this.$router.back();
     }
   },
@@ -148,7 +157,8 @@ export default {
     }
   },
   components: {
-    Scroll
+    Scroll,
+    TransiBase
   }
 }
 </script>
@@ -162,13 +172,25 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 99;
+    z-index: 999;
     background: #fff;
-    .back {
-      display: inline-block;
-      margin: 20px 0 10px 25px;
-      font-size: 26px;
-      color: #666;
+    .title {
+      text-align: center;
+      margin: 0 0 30px 0;
+      padding-top: 20px;
+      .back {
+        position: absolute;
+        left: 20px;
+        top: 10px;
+        display: inline-block;
+        font-size: 26px;
+        color: #666;
+      }
+      .text {
+        font-weight: 600;
+        color: #666;
+        font-size: 16px;
+      }
     }
     .login {
       display: flex;
@@ -223,7 +245,7 @@ export default {
       }
     }
     .login-btn {
-      margin: 0 auto 50px auto;
+      margin: 0 auto 30px auto;
       width: 70%;
       height: 50px;
       line-height: 50px;
@@ -235,7 +257,7 @@ export default {
     }
     .other-link {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0 40px 30px 40px;
       font-size: 14px;
       color: #666;

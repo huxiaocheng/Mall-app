@@ -7,6 +7,8 @@ import ShopCart from '@/pages/shopcart/shopcart';
 import ProductDetail from '@/pages/product-detail/product-detail';
 import Login from 'pages/login/login';
 import Register from 'pages/register/register';
+import FindPwd from 'pages/find-pwd/find-pwd';
+import Order from 'pages/order/order';
 
 Vue.use(Router)
 
@@ -51,6 +53,13 @@ export default new Router({
     {
       path: '/register',
       component: Register
+    },
+    {
+      path: '/find-pwd',
+      component: FindPwd
+    }, {
+      path: '/order',
+      component: Order
     }
   ]
 })

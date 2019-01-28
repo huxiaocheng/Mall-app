@@ -62,7 +62,6 @@ import { mapGetters, mapMutations, mapActions } from 'vuex';
 import Scroll from 'base/scroll/scroll';
 import Loading from 'base/loading/loading';
 import { getProductList } from 'api/product';
-import { ERR_OK } from 'api/require';
 
 export default {
   data() {
@@ -140,13 +139,11 @@ export default {
       if(this.hasMore && this.getParams.keyword) {
         getProductList(this.getParams).then(res => {
           this.getParams.pageNum++;
-          if(res.status === ERR_OK) {
-            this.list = this.list.concat(this._normalizeList(res.data.list));
-            setTimeout(() => {
-              this.$refs.scroll.refresh();
-            }, 20);
-            this.hasMore = res.data.hasNextPage;
-          }
+          this.list = this.list.concat(this._normalizeList(res.data.list));
+          setTimeout(() => {
+            this.$refs.scroll.refresh();
+          }, 20);
+          this.hasMore = res.data.hasNextPage;
         }).catch(ex => {
           console.log(ex);
         })

@@ -178,6 +178,6 @@ export default {
     text-align: center;
     font-size: 14px;
     color: #aaa;
-    z-index: -1;
+    z-index: -2;
   }
 </style>
