@@ -25,7 +25,7 @@
       <scroll class='scroll-wrap' ref='detailWrap' :listenScroll='listenScroll' :probeType='probeType' @scroll='scroll'>
         <div>
           <slider v-if='sliderDate && sliderDate.length > 0' :sliderDate='sliderDate' :loop='loop' :autoPlay='autoPlay' :dotsNumber='dotsNumber' ref='slider'></slider>
-          <div class='product-info' ref='productInfo'>
+          <div class='product-info' ref='productInfo' v-if='Object.keys(productInfo).length > 0'>
             <div class='price-wrap'>
               <div class='price'>
                 <span>￥</span>
@@ -47,17 +47,20 @@
               <span class='stock'>库存: {{productInfo.stock}}</span>
             </p>
           </div>
+          <div v-else class='product-loading'>
+            <loading />
+          </div>
           <div ref='detail' class='product-detail'>
             <img class='img-item' v-lazy="item" alt="" v-for='item in detailList' :key='item'>
           </div> 
         </div> 
       </scroll>
       <div class='add-cart'>
-        <div class='cart'>
+        <router-link tag='div' to='/shopcart' class='cart'>
           购物车
           <i class='iconfont icon-cart'>&#xe622;</i>
-          <span class='num'>1</span>
-        </div>
+          <span class='num'>{{cartProductAllNum}}</span>
+        </router-link>
         <div class='add-btn' @click='addProduct'>加入购物车</div>
       </div>
       <transition name='up'>
@@ -90,8 +93,9 @@ import Scroll from 'base/scroll/scroll';
 import Slider from 'base/slider/slider';
 import TransiBase from 'base/transition-base/transition-base';
 import Confirm from 'base/confirm/confirm';
+import Loading from 'base/loading/loading';
 import { getProductDetail } from 'api/product';
-import { addProductToCart } from 'api/cart';
+import { addProductToCart, getCartNum } from 'api/cart';
 
 const TOP_HEAD_HEIGHT = 56;
 
@@ -104,7 +108,8 @@ export default {
       switches: ['商品', '详情'],
       productInfo: {},
       showCartCount: false,
-      cartCount: 1
+      cartCount: 1,
+      cartProductAllNum: 0
     }
   },
   created() {
@@ -113,7 +118,14 @@ export default {
     this.loop = false;
     this.autoPlay = false;
     this.dotsNumber = true;
-    this._getProductDetail();
+    setTimeout(() => {
+      this._getProductDetail(this.$route.params.id);
+      this._getCartNum();
+    }, 20);
+  },
+  activated() {
+    this._getProductDetail(this.$route.params.id);
+    this._getCartNum();
   },
   computed: {
     sliderDate() {
@@ -141,13 +153,15 @@ export default {
       this.$router.back();
     },
     toCartLook() {
-      this.$router.push({path: '/shopcart'});
+      setTimeout(() => {
+        this.$router.push({path: '/shopcart'});
+      }, 100)
     },
     addToCart() {
       addProductToCart(this.$route.params.id, this.cartCount).then(res => {
         this.$refs.toCartConfrim.show();
       }).catch(ex => {
-        console.log(ex);
+        this.$notice(ex.msg);
       })
     },
     handleCartCount(num) {
@@ -173,16 +187,23 @@ export default {
     selectSwitchItem(index) {
       this.curIndex = index;
       if(index === 0) {
-        this.$refs.detailWrap.scrollTo(0, 0, 1000);
+        this.$refs.detailWrap.scrollTo(0, 0, 500);
       } else if (index === 1) {
-        this.$refs.detailWrap.scrollToElement(this.$refs.detail, 1000);
+        this.$refs.detailWrap.scrollToElement(this.$refs.detail, 500);
       }
     },
-    _getProductDetail() {
-      getProductDetail(this.$route.params.id).then(res => {
+    _getCartNum() {
+      getCartNum().then(res => {
+        this.cartProductAllNum = res.data;
+      }).catch(ex => {
+        this.$notice(ex.msg);
+      })
+    },
+    _getProductDetail(id) {
+      getProductDetail(id).then(res => {
         this.productInfo = res.data;
       }).catch(ex => {
-        console.log(ex);
+        this.$notice(ex.msg);
       })
     }
   },
@@ -204,7 +225,8 @@ export default {
     Scroll,
     Slider,
     TransiBase,
-    Confirm
+    Confirm,
+    Loading
   }
 }
 </script>
@@ -328,6 +350,9 @@ export default {
           text-align: right;
         }
       }
+    }
+    .product-loading {
+      margin-top: 100px;
     }
     .product-detail {
       padding-top: 10px;

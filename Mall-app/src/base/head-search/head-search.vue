@@ -31,7 +31,7 @@
             <i class='iconfont delete-all' @click='deleteHistory'>&#xe7f5;</i> 
           </div>
           <ul class='history-list'>
-            <li class='history-item' v-for='(item,index) in historyList' :key='item + index'>
+            <li class='history-item' v-for='(item, index) in historyList' :key='item + index'>
               <span class='name' @click='selectItem(item)'>{{item}}</span>  
               <i class='delete-icon' @click='removeHistoryItem(index)'>x</i> 
             </li>
@@ -65,7 +65,7 @@ export default {
   },
   computed: {
     placeText() {
-      const arr = ['手机', '键盘', '电脑', '护肤品', '冰箱', '玩具'];
+      const arr = ['手机', '电脑', '冰箱', '相机', '衣服', '电视'];
       return arr[Math.floor(Math.random() * arr.length)];
     },
     bg() {
@@ -78,6 +78,7 @@ export default {
   methods: {
     confirm() {
       this.removeAllHistory([]);
+      
     },
     removeHistoryItem(index) {
       this.removeARecord(index);
@@ -94,7 +95,11 @@ export default {
       this.$emit('cancel');
     },
     deleteHistory() {
-      this.$refs.confirm.show();
+      if (this.historyList.length > 0) {
+        this.$refs.confirm.show();
+      } else {
+        this.$notice('还没有搜索历史~');
+      }
     },
     selectItem(item) {
       this.$emit('inputEnter');

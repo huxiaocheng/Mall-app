@@ -9,10 +9,9 @@ export function createOrder(id) {  // 创建订单
   })
 }
 
-export function getOrderCartList(info) {  // 获取提交订单商品列表
+export function getOrderCartList() {  // 获取提交订单商品列表
   return require({
-    url: '/order/get_order_cart_product.do',
-    params: info
+    url: '/order/get_order_cart_product.do'
   })
 }
 
@@ -26,14 +25,14 @@ export function getOrderList(pageNum, pageSize) {  // 获取订单列表
   })
 }
 
-export function getOrderDetail(orderNo) {  // 获取订单详情
-  return require({
-    url: '/order/detail.do',
-    params: {
-      orderNo
-    }
-  })
-}
+// export function getOrderDetail(orderNo) {  // 获取订单详情
+//   return require({
+//     url: '/order/detail.do',
+//     params: {
+//       orderNo
+//     }
+//   })
+// }
 
 export function cancelOrder(orderNo) {  // 取消订单
   return require({

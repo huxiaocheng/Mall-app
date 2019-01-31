@@ -1,7 +1,7 @@
 import qs from 'qs';
-import axios from 'axios';
+// import axios from 'axios';
 import { require } from './require';
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+// axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
 export function userLogin(userInfo) {  // 登录
   userInfo = qs.stringify(userInfo);
@@ -61,5 +61,12 @@ export function setNewPwd(pwdInfo) {  // 忘记密码第三步 提交新密码
     url: '/user/forget_reset_password.do',
     method: 'post',
     data: pwdInfo
+  })
+}
+
+export function logout() {
+  return require({
+    url: '/user/logout.do',
+    method: 'post'
   })
 }

@@ -1,6 +1,6 @@
 <template>
 <transi-base nama='slide'>
-  <scroll class='login-wrap' :click='false'>
+  <scroll class='login-wrap'>
     <div>
       <div class='title'>
         <span class='back' @click='back'>

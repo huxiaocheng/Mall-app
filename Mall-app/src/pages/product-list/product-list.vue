@@ -64,6 +64,7 @@ import Loading from 'base/loading/loading';
 import { getProductList } from 'api/product';
 
 export default {
+  name: 'product-list',
   data() {
     return {
       sortBtns: ['综合','价格升序','价格降序'],

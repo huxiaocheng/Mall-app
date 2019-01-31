@@ -26,11 +26,11 @@ export function updateProductCount(productId, count) {  // 更新某个商品的
   })
 }
 
-export function removeProduct(productId) {  // 移除购物车某个产品
+export function removeProduct(productIds) {  // 移除购物车某个产品
   return require({
     url: '/cart/delete_product.do',
     params: {
-      productId
+      productIds
     }
   })
 }

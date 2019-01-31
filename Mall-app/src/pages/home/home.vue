@@ -23,6 +23,7 @@
       :pullup='pullup'
       @scroll='scroll'
       @scrollEnd='scrollEnd'
+      ref='scroll'
     >
       <div>
         <slider :sliderDate='sliderDate'/>
@@ -42,7 +43,6 @@ import Slider from 'base/slider/slider';
 import Floor from './components/floor';
 import Scroll from 'base/scroll/scroll'; 
 import TransiBase from 'base/transition-base/transition-base';
-import { mapGetters,mapMutations, mapActions } from 'vuex';
 
 const REFRESH_SCROLL_HEIGHT = 76;
 
@@ -77,6 +77,9 @@ export default {
     this.listenScroll = true;
     this.probeType = 3;
     this.pullup = true;
+  },
+  activated() {
+    this.$refs.scroll.refresh();
   },
   methods: {
     inputEnter() {

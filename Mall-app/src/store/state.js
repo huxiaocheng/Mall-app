@@ -1,6 +1,6 @@
 const state = {
   keyword: '',
-  historyList: []
+  historyList: JSON.parse(localStorage.getItem('historyList')) || [],
+  addressInfo: {}
 };
-
 export default state;

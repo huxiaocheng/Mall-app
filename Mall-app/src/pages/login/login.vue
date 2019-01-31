@@ -48,9 +48,14 @@ export default {
         return;
       }
       userLogin({username: this.username,password: this.password}).then(res => {
-        this.$router.back();
+        sessionStorage.setItem('token', 'mall_login_token');
+        if(!this.$router.history.current.query.redirect) {
+          this.$router.push('/home');
+        } else {
+          this.$router.push(this.$router.history.current.query.redirect);
+        }
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
       })
     },
     hideUsername() {
@@ -60,7 +65,7 @@ export default {
       this.password = '';
     },
     back() {
-      this.$router.back();
+      this.$router.push('/home');
     }
   },
   computed: {

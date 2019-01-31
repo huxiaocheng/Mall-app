@@ -1,16 +1,18 @@
 <template>
   <div>
-    <div class='page-title'>购物车(0)</div>
-    <scroll class='cart-wrap' :click='true'>
-      <div class='wrap' v-if='shopList.length'>
+    <div class='page-title'>购物车({{shopCartCount}})</div>
+    <scroll class='cart-wrap' :data='shopList.cartProductVoList'>
+      <div class='wrap' v-if='Array.isArray(shopList.cartProductVoList) && !shopList.cartProductVoList.length'>
         <i class='iconfont cart-icon'>&#xe635;</i>
         <h2 class='tips'>购物车空空如也~</h2>
         <p class='sub-tips'>“买点什么犒赏下自己吧~”</p> 
       </div>
-      <ul class='shopcart-list needsclick' v-if='!shopList.length'>
+      <ul class='shopcart-list' v-else>
         <li v-for='(item, index) in shopList.cartProductVoList' :key='item.id' class='shopcart-item'>
-          <label class='label' ref='label' :class='{active: index === curIndex}' :for='"item_"+item.id' @click='selectItem(index)'></label>
-          <input :id='"item_"+item.id' type="checkbox" style='display: block;' v-model='item.checked'>
+          <label class='label' ref='label' :class='{active: item.productChecked}' :for='"item_"+item.id' @click='toggleCartProduct(item.productId, index)'>
+            <i class='iconfont icon-select'>&#xe605;</i>
+          </label>
+          <input :id='"item_"+item.id' type="checkbox" style='display: none;' v-model='item.productChecked'>
           <div class='item-info'>
             <div class='img'>
               <img :src="shopList.imageHost+item.productMainImage" alt="">
@@ -20,86 +22,142 @@
               <div class='price-box'>
                 <div class='price'>￥{{item.productTotalPrice}}</div>
                 <div class='cart-num'>
-                  <span class='count-btn'>-</span>
-                  <input type="text">
-                  <span class='count-btn'>+</span>
+                  <span class='count-btn' @click='cartProductCount(-1, index, item.productId)'>-</span>
+                  <input type="text" v-model='item.quantity' disabled>
+                  <span class='count-btn' @click='cartProductCount(1, index, item.productId)'>+</span>
                 </div>
               </div>
             </div>
           </div>
+          <div class='remove-product' @click='removeCartProduct(item.productId)'>
+            <i class='iconfont'>&#xe7f5;</i>
+          </div>
         </li>
-      </ul> 
+      </ul>
+      <div class='loading-wrap' v-if='Object.keys(shopList).length === 0'>
+        <loading />
+      </div> 
     </scroll>
-    <div class='cart-bottom-bar'>
-      <div class='select-all-btn'>
-        <label for="cart-select-all" class='cart-select-all'></label>
+    <div class='cart-bottom-bar' v-if='Array.isArray(shopList.cartProductVoList) && shopList.cartProductVoList.length > 0'>
+      <div class='select-all-btn' @click='toggleSelectCartAll'>
+        <label for="cart-select-all" class='cart-select-all' :class='{active: shopList.allChecked}'>
+          <i class='iconfont icon-select-all'>&#xe605;</i>
+        </label>
         <span>全选</span>
         <input id='cart-select-all' type="checkbox" style='display: none;'>
       </div>
-      <div class='total-price'>合计 :<b>￥0.00</b></div>
-      <div class='go-settle'>去结算</div>
+      <div class='total-price'>合计 :<b>￥{{shopList.cartTotalPrice}}</b></div>
+      <div class='go-settle' @click='toSettlement'>去结算</div>
     </div>
   </div>
 </template>
 
 <script>
 import Scroll from 'base/scroll/scroll';
-import { getCartList } from 'api/cart';
+import Loading from 'base/loading/loading';
+import { getCartList, updateProductCount, removeProduct, selectProduct, unSelectProduct, selectAll, unSelectAll, getCartNum } from 'api/cart';
 import { addClass, removeClass, hasClass } from 'common/js/dom';
 
 export default {
   data() {
     return {
       curIndex: '',
-      shopList: {
-        allChecked: false,
-        cartProductVoList: [{
-          id: 21845,
-          limitQuantity: "LIMIT_NUM_SUCCESS",
-          productChecked: 0,
-          productId: 27,
-          productMainImage: "ac3e571d-13ce-4fad-89e8-c92c2eccf536.jpeg",
-          productName: "Midea/美的 BCD-535WKZM(E)冰箱双开门无霜智能家用厨卫家电",
-          productPrice: 3299,
-          productStatus: 1,
-          productStock: 104637,
-          productSubtitle: "送品牌烤箱，五一大促",
-          productTotalPrice: 3299,
-          quantity: 1,
-          userId: 9240
-        }],
-        cartTotalPrice: 0,
-        imageHost: "http://img.happymmall.com/"
-      }
+      shopList: {},
+      shopCartCount: 0
     }
   },
   created() {
     setTimeout(() => {
       this._getCartList();
+      this._getCartNum();
     }, 20)
   },
   methods: {
-    _getCartList() {
-      getCartList().then(res => {
-        if(res === 'not-login') {
-          this.$router.push('/login');
-        }
+    toSettlement() {
+      if (this.shopList.cartProductVoList.some(v => v.productChecked === 1)) {
+        this.$router.push('/settlement')
+      } else {
+        this.$notice('还没有勾选商品~');
+      }
+    },
+    toggleSelectCartAll() {  // 购物车全选
+      if (!this.shopList.allChecked) {
+        selectAll().then(res => {
+          this.shopList = res.data;
+        }).catch(ex => { 
+          this.$notice(ex.msg);
+        })
+      } else {
+        unSelectAll().then(res => {  // 购物全反选
+          this.shopList = res.data;
+        }).catch(ex => { 
+          this.$notice(ex.msg);
+        })
+      }
+    },
+    toggleCartProduct(productId, index) {
+      if (this.shopList.cartProductVoList[index].productChecked) {
+        unSelectProduct(productId).then(res => {  // 取消选中某件商品
+          this.shopList = res.data;
+        }).catch(ex => {
+          this.$notice(ex.msg);
+        })
+      } else {
+        selectProduct(productId).then(res => {  // 选中某个商品
+          this.shopList = res.data;
+        }).catch(ex => { 
+          this.$notice(ex.msg);
+        })
+      }
+    },
+    removeCartProduct (productId) {
+      removeProduct(productId).then(res => {  // 移除某件商品
         this.shopList = res.data;
-        console.log(res);
+        this.$notice('移除商品成功');
+        this._getCartNum();
       }).catch(ex => {
         this.$notice(ex);
       })
     },
-    selectItem(index) {
-      if (hasClass(this.$refs.label[index], 'active')) {
-        removeClass(this.$refs.label[index], 'active');
+    cartProductCount(btn, index, productId) {
+      const maxCount = this.shopList.cartProductVoList[index].productStock;
+      let curCount = this.shopList.cartProductVoList[index].quantity;
+      if(btn === 1 && curCount < maxCount) {
+        curCount++;
+      } else if (btn === -1 && curCount > 1) {
+        curCount--;
       } else {
-        addClass(this.$refs.label[index],'active')
+        return;
       }
+      updateProductCount(productId, curCount).then(res => {  // 更新某件商品数量
+        this.shopList = res.data;
+        this.shopList.cartProductVoList[index].quantity = curCount;
+        this._getCartNum();
+      }).catch(ex => {
+        this.$notice(ex.msg);
+      })
+    },
+    back() {
+      this.$router.back();
+    },
+    _getCartNum() {
+      getCartNum().then(res => {
+        this.shopCartCount = res.data;
+      }).catch(ex => {
+        this.$notice(ex.msg);
+      })
+    },
+    _getCartList() {  // 获取购物车列表
+      getCartList().then(res => {
+        this.shopList = res.data;
+      }).catch(ex => {
+        this.$notice(ex);
+      })
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Loading
   }
 }
 </script>
@@ -108,6 +166,7 @@ export default {
 @import '~common/scss/mixins';
 
   .page-title {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -119,7 +178,7 @@ export default {
   .cart-wrap {
     position: fixed;
     top: 56px;
-    bottom: 55px;
+    bottom: 106px;
     width: 100%;
     overflow: hidden;
     .wrap {
@@ -155,6 +214,7 @@ export default {
   .shopcart-list {
     display: flex;
     flex-direction: column;
+    padding-bottom: 10px;
     .shopcart-item {
       display: flex;
       align-items: center;
@@ -165,11 +225,19 @@ export default {
         display: inline-block;
         width: 15px;
         height: 15px;
+        line-height: 15px;
+        text-align: center;
         margin-right: 15px;
         border: 2px solid #999;
         border-radius: 50%;
+        transition: .3s all;
         &.active {
           border-color: #ef5050;
+          background: #ef5050;
+        }
+        .icon-select {
+          font-size: 12px;
+          color: #fff;
         }
       }
       .item-info {
@@ -180,56 +248,75 @@ export default {
         border-radius: 10px;
         border: 1px solid #ddd;
         .img {
+          position: relative;
           width: 80px;
           height: 80px;
           flex: 0 0 80px;
           margin-right: 10px;
           > img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: auto;
             display: block;
-            width: 100%;
-            height: 100%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            max-height: 100%;
           }
         }
         .text-info {
           flex: 1;
           font-size: 15px;
           line-height: 18px;
-        }
-        .price-box {
-          display: flex;
-          justify-content: space-between;
-          .price {
-            color:#ef5050;
-          }
-          .cart-num {
+          .price-box {
             display: flex;
-            .count-btn {
-              @include extend-click();
+            justify-content: space-between;
+            margin-top: 10px;
+            .price {
+              color:#ef5050;
             }
-            > input {
-              font-weight: 600;
-              margin: 0 5px;
-              padding: 0 5px;
-              width: 40px;
-              outline: none;
-              text-align: center;
-              color: #666;
-              box-sizing: border-box;
-              background: #eee;
+            .cart-num {
+              display: flex;
+              .count-btn {
+                @include extend-click();
+              }
+              > input {
+                font-weight: 600;
+                margin: 0 10px;
+                padding: 0 5px;
+                width: 40px;
+                border-radius: 3px;
+                outline: none;
+                text-align: center;
+                color: #666;
+                box-sizing: border-box;
+                background: #eee;
+              }
             }
           }
         }
       }
+      .remove-product {
+        margin-left: 10px;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        color: #fff;
+        border-radius: 50%;
+        background: #bbb;
+      }
     }
+  }
+  .loading-wrap {
+    margin-top: 100px;
   }
   .cart-bottom-bar {
     position: fixed;
     bottom: 55px;
     left: 0;
     right: 0;
-    /* display: flex;
-    justify-content: space-between;
-    align-items: center; */
     padding-left: 15px;
     height: 50px;
     line-height: 50px;
@@ -253,7 +340,16 @@ export default {
         border: 2px solid #999;
         border-radius: 50%;
         &.active {
+          background: #ef5050;
           border-color: #ef5050;
+        }
+        .icon-select-all {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 12px;
+          color: #fff;
         }
       }
     }
@@ -261,6 +357,12 @@ export default {
       float: left;
       margin-left: 20px;
       line-height: 50px;
+      font-size: 14px;
+      > b {
+        font-size: 16px;
+        font-weight: 600;
+        color:#ef5050;
+      }
     }
     .go-settle {
       float: right;

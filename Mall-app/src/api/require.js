@@ -1,32 +1,27 @@
-import Vue from 'vue';
 import axios from 'axios';
 
+export const require = axios.create({
+  baseURL: '',
+  timeout: 60000
+});
 
-export function require(param) {
-  return new Promise((resolve, reject) => {
-    return axios({
-      method: param.method || 'get',
-      url: getServerUrl(param.url),
-      params: param.params || '',
-      data: param.data || ''
-    }).then(res => {
-      if(res.data.status === 0) { // 成功
-        resolve(res.data);
-      } else if(res.data.status === 1) { // 失败
-        new Vue().$notice(res.data.msg);
-        if (res.data.msg === '用户未登录,无法获取当前用户的信息') {
-          resolve('not-login')
-        }
-      } else if(res.data.status === 10) { // 强制登录
-        resolve('not-login')
-      }
-    }).catch(ex => {
-      console.log(ex);
-      // reject(ex.response.statusText);
-    })
-  })
-}
+require.interceptors.request.use(config => {
+  if (config.method === 'post') {
+    config.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+  }
+  return config;
+}, err => {
+  return Promise.reject(err);
+})
 
-function getServerUrl(url) {
-  return '' + url;
-}
+require.interceptors.response.use(response => {
+  if (response.data.status === 0) {
+    return Promise.resolve(response.data);
+  } else if (response.data.status === 1) {
+    return Promise.reject(response.data);
+  } else if (response.data.status === 10) {
+    return Promise.reject(response.data);
+  }
+}, err => {
+  return Promise.reject(err);
+})

@@ -14,15 +14,14 @@
     data () {
       return {
         visible: false,
-        content: '',
-        duration: 1000
+        content: ''
       }
     },
     methods: {
       setTimer() {
         setTimeout(() => {
           this.close();
-        }, this.duration);
+        }, 1200);
       },
       close() {
         this.visible = false

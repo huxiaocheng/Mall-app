@@ -13,44 +13,52 @@
       </li>
     </ul>
     <scroll class='order-list-scroll' :data='orderList' ref='scroll'>
-      <ul class='order-list' v-if='orderList.length > 0'>
-        <li class='order-item' v-for='(item, index) in orderList' :key='item.createTime'>
-          <p class='order-status'>{{item.statusDesc}}</p>
-          <div class='order-info'>
-            <img class='img' :src="item.imageHost+item.orderItemVoList[0].productImage" alt="" />
-            <span class='text'>{{item.orderItemVoList[0].productName}}</span>
-          </div>
-          <div class='order-detail-info'>
-            <div class='detail-btn' @click='lookCurOrder(index)'>
-              查看详情<i class='iconfont icon-more'>&#xe62f;</i>
+      <div>
+        <ul class='order-list' v-if='orderList.length > 0'>
+          <li class='order-item' v-for='(item, index) in orderList' :key='item.createTime'>
+            <p class='order-status'>{{item.statusDesc}}</p>
+            <ul>
+              <router-link tag='li' class='order-info' v-for='(product, index) in item.orderItemVoList' :key='index' :to='"/product-list/" + product.productId'>
+                <img class='img' :src="item.imageHost+product.productImage" alt="" />
+                <span class='text'>{{product.productName}}</span>
+                <div class='item-info'>
+                  <span class='total'>x{{product.quantity}} </span>
+                  <span class='price'> {{product.currentUnitPrice}}</span>
+                </div>
+              </router-link>
+            </ul>
+            <div class='order-detail-info'>
+              <div class='detail-btn' @click='lookCurOrder(index)'>
+                查看详情<i class='iconfont icon-more'>&#xe62f;</i>
+              </div>
+              <p class='price'>共计<span> {{item.payment}} </span>元</p>
+              <div class='order-pay' v-if='item.statusDesc === "未支付"'>
+                <p class='pay-btn'>去支付</p>
+              </div>
             </div>
-            <p class='price'>共{{item.orderItemVoList[0].quantity}}件商品，一共<span> {{item.orderItemVoList[0].totalPrice}} </span>元</p>
-          </div>
-          <div class='order-pay' v-if='item.statusDesc === "未付款"'>
-            <p class='pay-btn'>去支付</p>
-          </div>
-          <ul class='detail-list' v-show='index === orderIndex'>
-            <li class='detail-item'><i class='iconfont'>&#xe67c;</i>订单编号: {{item.orderNo}}</li>
-            <li class='detail-item'><i class='iconfont'>&#xe60e;</i>创建时间: {{item.createTime}}</li>
-            <li class='detail-item'><i class='iconfont'>&#xe655;</i>收件人：{{item.shippingVo.receiverName}}</li>
-            <li class='detail-item'><i class='iconfont'>&#xe64e;</i>收货地址：{{`${item.shippingVo.receiverProvince}-${item.shippingVo.receiverCity}-${item.shippingVo  .receiverAddress}`}}</li>
-            <li class='detail-item'><i class='iconfont'>&#xe66b;</i>电话：{{item.shippingVo.receiverMobile}}</li>
-            <li class='detail-item'><i class='iconfont'>&#xe8f9;</i>支付方式：{{item.paymentTypeDesc}}</li>
-            <li class='detail-item cancel'>
-              <p class='up' @click='packUpDetail'>收起<i class='iconfont icon-up'>&#xe624;</i></p>  
-              <p class='order-cancel-btn' v-if='item.statusDesc === "未付款"' @click='cancelCurOrder(item.orderNo)'>取消订单</p>
-            </li>
-          </ul>
-        </li>
-      </ul>
-      <div class='no-order' v-show='!orderList.length && isNoMore'>
-        还没有相关订单
+            <ul class='detail-list' v-show='index === orderIndex'>
+              <li class='detail-item'><i class='iconfont'>&#xe67c;</i>订单编号: {{item.orderNo}}</li>
+              <li class='detail-item'><i class='iconfont'>&#xe60e;</i>创建时间: {{item.createTime}}</li>
+              <li class='detail-item' v-if='item.shippingVo != null'><i class='iconfont'>&#xe655;</i>收件人：{{item.shippingVo.receiverName}}</li>
+              <li class='detail-item' v-if='item.shippingVo != null'><i class='iconfont'>&#xe64e;</i>收货地址：{{item.shippingVo.receiverProvince}}{{item.shippingVo.receiverCity}}{{item.shippingVo.receiverAddress}}</li> 
+              <li class='detail-item' v-if='item.shippingVo'><i class='iconfont'>&#xe66b;</i>电话：{{item.shippingVo.receiverMobile}}</li>
+              <li class='detail-item' v-if='item.shippingVo'><i class='iconfont'>&#xe8f9;</i>支付方式：{{item.paymentTypeDesc}}</li>
+              <li class='detail-item cancel'>
+                <p class='up' @click='packUpDetail'>收起<i class='iconfont icon-up'>&#xe624;</i></p>  
+                <p class='order-cancel-btn' v-if='item.statusDesc === "未支付"' @click='cancelCurOrder(item.orderNo)'>取消订单</p>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <div class='no-order' v-if='!orderList.length && isNoMore'>
+          还没有相关订单
+        </div>
       </div>
       <div class='loading-wrap' v-show='!orderList.length && !isNoMore'>
         <loading></loading>
       </div>
     </scroll>
-    <confirm ref='confirm' @confirm='confrim'/>
+    <confirm ref='confirm' @confirm='confrim' title='确认取消订单吗？'/>
   </div>
 </template>
 
@@ -61,12 +69,14 @@ import { getOrderList, cancelOrder } from 'api/order';
 import Confirm from 'base/confirm/confirm';
 
 export default {
+  name: 'order',
   data() {
     return {
       orderList: [],
       switchList: ['全部', '待付款', '已发货', '已取消', '已支付'],
       curIndex: 0,
       orderIndex: '',
+      orderDetail: {},
       isNoMore: false
     }
   },
@@ -75,6 +85,9 @@ export default {
       this._getOrderList();
     }, 20);
     this.orderNum = 0;
+  },
+  activated() {
+    this.$refs.scroll.refresh();
   },
   methods: {
     packUpDetail() {
@@ -96,6 +109,7 @@ export default {
     confrim() {
       cancelOrder(this.orderNum).then(res => {
         this.$notice('订单取消成功');
+        this._getOrderList();
         this.orderNum = 0;
       }).catch(ex => {
         this.$notice(ex);
@@ -134,6 +148,11 @@ export default {
       });
     }
   },
+  watch: {
+    orderList() {
+      this.$refs.scroll.refresh();
+    }
+  },
   components: {
     Scroll,
     Loading,
@@ -160,6 +179,7 @@ export default {
       height: 40px;
       line-height: 40px;
       border-bottom: 1px solid #cdcdcd;
+      margin-top: 10px;;
       outline: 10px solid #f8f8f8;
       background: #fff;
       .switch-item {
@@ -174,16 +194,18 @@ export default {
     }
     .order-list-scroll {
       position: fixed;
-      top: 107px;
-      bottom: 0;
+      top: 117px;
+      bottom: 65px;
       width: 100%;
       overflow: hidden;
       background: #f8f8f8;
       .order-list {
+        min-height: 101%;
         .order-item {
           margin-bottom: 10px;
           background: #fff;
           font-size: 14px;
+          border-top: 1px solid #ffd5d5;
           .order-status {
             padding-right: 20px;
             height: 35px;
@@ -194,8 +216,11 @@ export default {
           .order-info {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 10px;
+            margin: 0 5px;
             background: #f8f8f8;
+            border-bottom: 1px solid #eee;
             .img {
               display: inline-block;
               margin-right: 10px;
@@ -204,17 +229,28 @@ export default {
               height: 60px;
             }
             .text {
+              flex: 1;
               padding-right: 10px;
-              text-indent: 30px;
               font-size: 14px;
               line-height: 16px;
               color: #666;
+            }
+            .item-info {
+              display: flex;
+              flex-direction: column;
+              font-weight: bold;
+              color: #666;
+              .total {
+                margin-bottom: 10px;
+                text-align: right;
+              }
             }
           }
           .order-detail-info {
             display: flex;
             justify-content: space-between;
             padding: 10px 20px; 
+            align-items: center;
             color: #666;
             border-bottom: 1px solid #f1f1f1;
             .detail-btn{
@@ -224,23 +260,25 @@ export default {
               }
             }
             .price {
+              flex: 1;
+              text-align: right;
+              margin-right: 15px;
               span {
                 font-size: 16px;
                 font-weight: 600;
+                color: #ef5050;
               }
             }
-          }
-          .order-pay {
-            overflow: hidden;
-            padding: 10px 20px;
-            border-bottom: 1px solid #f1f1f1;
-            .pay-btn {
-              display: block;
-              float: right;
-              padding: 8px 20px;
-              border: 1px solid #ef5050;
-              border-radius: 30px;
-              color: #ef5050;
+            .order-pay {
+              overflow: hidden;
+              .pay-btn {
+                display: block;
+                float: right;
+                padding: 8px 20px;
+                border: 1px solid #ef5050;
+                border-radius: 30px;
+                color: #ef5050;
+              }
             }
           }
           .detail-list {
