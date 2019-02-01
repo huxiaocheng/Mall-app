@@ -220,13 +220,15 @@ export default {
       
     },
     back() {
-      this.$router.back();
+      if(this.$router.history.current.path === '/add-address') {
+        this.$router.push('/mycenter');
+      } else {
+        this.$router.back();
+      }
+      console.log(this.$router.history.current.name)
     },
     _getAddressList() {  //获取地址列表
       Address.getAddressList().then(res => {
-        if(res === 'not-login') {
-          this.$router.push('/login');
-        }
         this.infoList = res.data;
       })
     },

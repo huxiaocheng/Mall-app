@@ -1,16 +1,19 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import ProductList from '@/pages/product-list/product-list';
-import Home from '@/pages/home/home';
-import MyCenter from '@/pages/mycenter/mycenter';
-import ShopCart from '@/pages/shopcart/shopcart';
-import ProductDetail from '@/pages/product-detail/product-detail';
+import ProductList from 'pages/product-list/product-list';
+import Home from 'pages/home/home';
+import MyCenter from 'pages/mycenter/mycenter';
+import ShopCart from 'pages/shopcart/shopcart';
+import ProductDetail from 'pages/product-detail/product-detail';
 import Login from 'pages/login/login';
 import Register from 'pages/register/register';
 import FindPwd from 'pages/find-pwd/find-pwd';
 import Order from 'pages/order/order';
 import Settlement from 'pages/settlement/settlement';
 import AddAddress from 'pages/add-address/add-address';
+import PersonInfo from 'pages/person-info/person-info';
+import UpdatePwd from 'pages/update-pwd/update-pwd';
+import Intro from 'pages/intro/intro';
 
 Vue.use(Router)
 
@@ -47,9 +50,24 @@ export default new Router({
       path: '/mycenter',  // 个人中心
       name: 'mycenter',
       component: MyCenter,
-      meta: {
-        requireAuth: true
-      }
+      children: [
+        {
+          path: '/mycenter/person-info',
+          component: PersonInfo,
+          meta: {
+            requireAuth: true
+          }
+        }, {
+          path: '/mycenter/update-pwd',
+          component: UpdatePwd,
+          meta: {
+            requireAuth: true
+          }
+        }, {
+          path: '/mycenter/intro',
+          component: Intro
+        }
+      ]
     },
     {
       path: '/shopcart',  // 购物车
@@ -62,7 +80,7 @@ export default new Router({
     {
       path: '/login',  // 登录
       name: 'login',
-      component: Login 
+      component: Login
     },
     {
       path: '/register',  // 注册
@@ -89,7 +107,10 @@ export default new Router({
     }, {
       path: '/add-address',  // 添加地址
       name: 'add-address',
-      component: AddAddress
+      component: AddAddress,
+      meta: {
+        requireAuth: true
+      }
     }
   ]
 })

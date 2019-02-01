@@ -21,7 +21,7 @@
         </div>
       </div>
       <transition name='fade'>
-        <div class='login-btn' @click='handleUserLogin' :style='inputStatus'>登录</div>
+        <div class='login-btn' @click='handleUserLogin' @keyup.enter="handleUserLogin" :style='inputStatus'>登录</div>
       </transition>
       <div class='other-link'>
         <router-link tag='span' to='/find-pwd'>忘记密码</router-link>
@@ -49,6 +49,8 @@ export default {
       }
       userLogin({username: this.username,password: this.password}).then(res => {
         sessionStorage.setItem('token', 'mall_login_token');
+        this.hideUsername();
+        this.hidePassword();
         if(!this.$router.history.current.query.redirect) {
           this.$router.push('/home');
         } else {
@@ -65,7 +67,7 @@ export default {
       this.password = '';
     },
     back() {
-      this.$router.push('/home');
+      this.$router.back();
     }
   },
   computed: {
