@@ -12,6 +12,7 @@ const mutations = {
   },
   [types.SAVE_ADDRESS_INFO](state, info) {
     state.addressInfo = info;
+    localStorage.setItem('addressInfo',JSON.stringify(info));
   }
 };
 

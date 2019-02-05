@@ -70,7 +70,7 @@
           </div>
           <div class='add-cart-info'>
             <div class='img-box'>
-              <img class='go-cart-img' :src="productInfo.imageHost+productInfo.mainImage" alt="">
+              <img class='go-cart-img' v-lazy="productInfo.imageHost+productInfo.mainImage" alt="">
             </div>
             <p class='go-cart-price'>￥:{{productInfo.price}}</p>
           </div>

@@ -1,49 +1,52 @@
 <template>
   <div>
-    <red-title @back='back'/>
-    <scroll class='confirm-order-info'>
-      <div class='order-wrap'>
-        <router-link tag='div' to='/add-address'>
-          <div class='address-wrap' v-if='hasAddressInfo'>
-              <i class='iconfont icon-address'>&#xe64e;</i>
-            <div class='info'>
-              <div class='name'>
-                <span class='person'>收件人: {{addressInfo.name}}</span>
-                <span class='phone'>{{addressInfo.phone}}</span>
-              </div>
-              <div class='detail-address'>
-                <p class='address-text'>{{addressInfo.province}}{{addressInfo.city}}{{addressInfo.address}}</p>
-                <i class='iconfont'>&#xe630;</i>
+    <div>
+      <red-title @back='back'/>
+      <scroll class='confirm-order-info'>
+        <div class='order-wrap'>
+          <router-link tag='div' to='/add-address'>
+            <div class='address-wrap' v-if='hasAddressInfo'>
+                <i class='iconfont icon-address'>&#xe64e;</i>
+              <div class='info'>
+                <div class='name'>
+                  <span class='person'>收件人: {{addressInfo.name}}</span>
+                  <span class='phone'>{{addressInfo.phone}}</span>
+                </div>
+                <div class='detail-address'>
+                  <p class='address-text'>{{addressInfo.province}}{{addressInfo.city}}{{addressInfo.address}}</p>
+                  <i class='iconfont'>&#xe630;</i>
+                </div>
               </div>
             </div>
-          </div>
-          <div class='no-address' v-else>
-            还没有填写收货地区，去填写 <i class='iconfont'>&#xe630;&#xe630;</i>
-          </div>
-        </router-link>
-        <ul class='product-info-wrap'>
-          <router-link tag='li' class='product-info-item' v-for='item in submitOrderList.orderItemVoList' :key='item.productId' :to='"/product-list/"+item.productId'>
-            <div class='img'>
-              <img :src="submitOrderList.imageHost+item.productImage" alt="">
-            </div>
-            <div class='product-info'>
-              <p class='title'>{{item.productName}}</p>
-              <p class='price-info'>
-                <span class='price'>￥{{item.totalPrice}}</span>
-                <span class='total'>x{{item.quantity}}</span>
-              </p>
+            <div class='no-address' v-else>
+              还没有选择默认地址，去选择<i class='iconfont'>&#xe630;&#xe630;</i>
             </div>
           </router-link>
-        </ul>
+          <ul class='product-info-wrap'>
+            <router-link tag='li' class='product-info-item' v-for='item in submitOrderList.orderItemVoList' :key='item.productId' :to='"/product-list/"+item.productId'>
+              <div class='img'>
+                <img v-lazy="submitOrderList.imageHost+item.productImage" alt="">
+              </div>
+              <div class='product-info'>
+                <p class='title'>{{item.productName}}</p>
+                <p class='price-info'>
+                  <span class='price'>￥{{item.totalPrice}}</span>
+                  <span class='total'>x{{item.quantity}}</span>
+                </p>
+              </div>
+            </router-link>
+          </ul>
+        </div>
+        <div class='loading-wrap' v-if='Object.keys(submitOrderList).length === 0'>
+          <loading/>
+        </div>
+      </scroll>
+      <div class='submit-wrap'>
+        <div class='submit-btn' @click='handleCreateOrder'>提交订单</div>
+        <p class='total-all'>合计金额: <span>￥{{submitOrderList.productTotalPrice}}</span></p>
       </div>
-      <div class='loading-wrap' v-if='Object.keys(submitOrderList).length === 0'>
-        <loading/>
-      </div>
-    </scroll>
-    <div class='submit-wrap'>
-      <div class='submit-btn' @click='handleCreateOrder'>提交订单</div>
-      <p class='total-all'>合计金额: <span>￥{{submitOrderList.productTotalPrice}}</span></p>
     </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -76,10 +79,18 @@ export default {
   },
   methods: {
     handleCreateOrder() {
-      console.log(this.addressInfo.id);
-      // createOrder(this.addressInfo.id).then(res => {
-      //   console.log(res);
-      // })
+      if(!this.addressInfo.id) {
+        this.$notice('请选择收货地址');
+        return;
+      }
+      createOrder(this.addressInfo.id).then(res => {
+        this.$router.push({
+          name: 'pay',
+          params: {
+            orderNo: res.data.orderNo
+          }
+        })
+      })
     },
     back() {
       this.$router.push('/shopcart');
@@ -88,7 +99,10 @@ export default {
       getOrderCartList().then(res => {
         this.submitOrderList = res.data;
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
+        setTimeout(() => {
+          this.$router.push('/shopcart');
+        }, 1000);
       })
     }
   },

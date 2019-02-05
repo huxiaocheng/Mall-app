@@ -24,3 +24,10 @@ export const removeARecord = ({commit, state}, index) => {
   localStorage.setItem('historyList', JSON.stringify(list));
   commit(types.ADD_HISTORY_LIST, list);
 };
+
+export const removeAddress = ({commit, state}, id) => {
+  if (id === state.addressInfo.id) {
+    commit(types.SAVE_ADDRESS_INFO, {});
+    localStorage.removeItem('addressInfo');
+  }
+};

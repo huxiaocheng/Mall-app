@@ -81,7 +81,7 @@ export default {
             this.$router.push('/login');
           })
           .catch(ex => {
-            this.$notice(ex);
+            this.$notice(ex.msg);
           })
         } else {
           this.$notice(result.msg)
@@ -99,7 +99,7 @@ export default {
       if(username !== '') {
         checkRegisterUsername({type: 'username', str: username}).then(res => {
         }).catch(ex => {
-          this.$notice(ex);
+          this.$notice(ex.msg);
         })
       }
     },

@@ -25,15 +25,6 @@ export function getOrderList(pageNum, pageSize) {  // 获取订单列表
   })
 }
 
-// export function getOrderDetail(orderNo) {  // 获取订单详情
-//   return require({
-//     url: '/order/detail.do',
-//     params: {
-//       orderNo
-//     }
-//   })
-// }
-
 export function cancelOrder(orderNo) {  // 取消订单
   return require({
     url: '/order/cancel.do',

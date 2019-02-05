@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class='page-title'>购物车({{shopCartCount}})</div>
-    <scroll class='cart-wrap' :data='shopList.cartProductVoList'>
+    <scroll class='cart-wrap' :data='list'>
       <div class='wrap' v-if='Array.isArray(shopList.cartProductVoList) && !shopList.cartProductVoList.length'>
         <i class='iconfont cart-icon'>&#xe635;</i>
         <h2 class='tips'>购物车空空如也~</h2>
@@ -15,7 +15,7 @@
           <input :id='"item_"+item.id' type="checkbox" style='display: none;' v-model='item.productChecked'>
           <div class='item-info'>
             <div class='img'>
-              <img :src="shopList.imageHost+item.productMainImage" alt="">
+              <img v-lazy="shopList.imageHost+item.productMainImage" alt="">
             </div>
             <div class='text-info'>
               <span class='name'>{{item.productName}}</span>
@@ -59,6 +59,7 @@ import { getCartList, updateProductCount, removeProduct, selectProduct, unSelect
 import { addClass, removeClass, hasClass } from 'common/js/dom';
 
 export default {
+  name: 'shopcart',
   data() {
     return {
       curIndex: '',
@@ -71,6 +72,11 @@ export default {
       this._getCartList();
       this._getCartNum();
     }, 20)
+  },
+  computed: {
+    list() {
+      return this.shopList.cartProductVoList;
+    }
   },
   methods: {
     toSettlement() {
@@ -116,7 +122,7 @@ export default {
         this.$notice('移除商品成功');
         this._getCartNum();
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
       })
     },
     cartProductCount(btn, index, productId) {
@@ -151,7 +157,7 @@ export default {
       getCartList().then(res => {
         this.shopList = res.data;
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
       })
     }
   },
@@ -218,6 +224,7 @@ export default {
     .shopcart-item {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       margin-top: 20px;
       padding: 0 10px;
       min-height: 100px;
@@ -226,6 +233,7 @@ export default {
         width: 15px;
         height: 15px;
         line-height: 15px;
+        flex: 0 0 15px;
         text-align: center;
         margin-right: 15px;
         border: 2px solid #999;
@@ -241,6 +249,9 @@ export default {
         }
       }
       .item-info {
+        position: absolute;
+        left: 39px;
+        right: 49px;
         display: flex;
         align-items: center;
         flex: 1;
@@ -266,9 +277,15 @@ export default {
           }
         }
         .text-info {
-          flex: 1;
           font-size: 15px;
           line-height: 18px;
+          overflow: hidden;
+          width: 100%;
+          .name {
+            display: inline-block;
+            width: 90%;
+            overflow: hidden;
+          }
           .price-box {
             display: flex;
             justify-content: space-between;
@@ -301,6 +318,7 @@ export default {
         margin-left: 10px;
         width: 30px;
         height: 30px;
+        flex: 0 0 30px;
         line-height: 30px;
         text-align: center;
         color: #fff;

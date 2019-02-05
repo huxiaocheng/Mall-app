@@ -12,7 +12,7 @@
       </div>
       <div class='input-wrap'>
         <div class='input-item'>
-          <input class='input' v-model.trim='username' type="text" placeholder="用户名">
+          <input class='input' v-model.trim='username' ref='username' type="text" placeholder="用户名">
           <span @click='hideUsername' v-show='username && username.length > 0' class='cancel-input'>x</span>
         </div>
         <div class='input-item'>
@@ -41,6 +41,11 @@ export default {
       username: '',
       password: ''
     }
+  },
+  mounted() {
+    setTimeout(() => {
+      this.$refs.username.focus();
+    }, 20);
   },
   methods: {
     handleUserLogin() {

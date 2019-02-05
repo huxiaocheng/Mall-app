@@ -19,7 +19,9 @@
             <p class='order-status'>{{item.statusDesc}}</p>
             <ul>
               <router-link tag='li' class='order-info' v-for='(product, index) in item.orderItemVoList' :key='index' :to='"/product-list/" + product.productId'>
-                <img class='img' :src="item.imageHost+product.productImage" alt="" />
+                <div class='img-box'>
+                  <img class='img' v-lazy="item.imageHost+product.productImage" alt="" />
+                </div>
                 <span class='text'>{{product.productName}}</span>
                 <div class='item-info'>
                   <span class='total'>x{{product.quantity}} </span>
@@ -112,7 +114,7 @@ export default {
         this._getOrderList();
         this.orderNum = 0;
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
       })
     },
     _orderType(list, type) {
@@ -123,10 +125,7 @@ export default {
       }
     },
     _getOrderList() {
-      getOrderList(1,10).then(res => {
-        if(res === 'not-login') {
-          this.$router.push('/login');
-        }
+      getOrderList(1,100).then(res => {
         const list = res.data.list;
         if(this.curIndex === 1) {
           this.orderList = this._orderType(list, '未支付');
@@ -142,15 +141,7 @@ export default {
         if(this.orderList.length === 0) {
           this.isNoMore = true;
         }
-        this.$refs.scroll.refresh();
-      }).catch(ex => {
-        this.$notice(ex);
-      });
-    }
-  },
-  watch: {
-    orderList() {
-      this.$refs.scroll.refresh();
+      }) 
     }
   },
   components: {
@@ -221,12 +212,25 @@ export default {
             margin: 0 5px;
             background: #f8f8f8;
             border-bottom: 1px solid #eee;
-            .img {
-              display: inline-block;
-              margin-right: 10px;
+            .img-box {
+              position: relative;
               flex: 0 0 60px;
               width: 60px;
               height: 60px;
+              margin-right: 10px;
+              background: #fff;
+              border: 1px solid #eee;
+              .img {
+                display: inline-block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 100%;
+                max-height: 100%;
+                width: auto;
+                height: auto;
+              }
             }
             .text {
               flex: 1;

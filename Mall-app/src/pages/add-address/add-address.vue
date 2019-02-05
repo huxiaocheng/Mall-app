@@ -3,8 +3,8 @@
     <red-title @back='back' text='收货地址'/>
     <scroll class='create-address-wrap' :data='infoList.list'>
       <ul class='address-list'>
-        <li class='address-item' v-for='item in infoList.list' :key='item.id' @click='selectUserAddress(item.id, false)'>
-          <span class='icon-select'>
+        <li class='address-item' v-for='item in infoList.list' :key='item.id'>
+          <span class='icon-select' @click='selectAddress(item.id)' :class='{active: item.id === addressInfo.id}'>
             <i class='iconfont'>&#xe605;</i>
           </span>
           <div class='info'>
@@ -15,7 +15,7 @@
             <p class='address'>{{item.receiverProvince}}{{item.receiverCity}}{{item.receiverAddress}}</p>
           </div>
           <div class='edit-wrap'>
-            <i class='iconfont icon-edit' @click.stop='editAddress(item.id, true)'>&#xe604;</i>
+            <i class='iconfont icon-edit' @click.stop='editAddress(item.id)'>&#xe604;</i>
             <i class='iconfont icon-edit delete' @click.stop='deleteAddress(item.id)'>&#xe7f5;</i>
           </div>
         </li>
@@ -25,9 +25,8 @@
       </div>
       <div class='no-address-tips' v-if='Array.isArray(infoList.list) && !infoList.list.length'>新建条地址吧~</div>
     </scroll>
-    <div class='new-create-address' @click='showNewCreateAddressMask()'>
-      <i class='iconfont icon-add'>&#xe613;</i>
-      新建收货地址
+    <div class='new-create-address' @click='createAddress()'>
+      <i class='iconfont icon-add'>&#xe613;</i>新建收货地址
     </div>
     <trans-base>
       <div class='new-create-mask' v-show='isShowMask'>
@@ -67,10 +66,11 @@
               </div>
             </li>
           </ul>
-          <div class='save' @click='saveNewAddress()'>保存</div>
+          <div class='save' @click='saveAddressInfoBtn()'>保存</div>
         </div>
       </div>
     </trans-base>
+    <confirm title='设置为默认地址？' @confirm='setDefaultAddress' ref='confirm' />
   </div>
 </template>
 
@@ -79,8 +79,9 @@ import Scroll from 'base/scroll/scroll';
 import transBase from 'base/transition-base/transition-base';
 import RedTitle from 'base/red-title/red-title';
 import Loading from 'base/loading/loading';
+import Confirm from 'base/confirm/confirm';
 import { getProvinces, getCities } from 'common/js/cityinfo';
-import { mapMutations } from 'vuex';
+import { mapMutations, mapGetters, mapActions } from 'vuex';
 import * as Address from 'api/address';
 
 export default {
@@ -105,45 +106,53 @@ export default {
       this._getAddressList();  // 获得地址列表
     }, 20);
   },
+  computed: {
+    ...mapGetters([
+      'addressInfo'
+    ])
+  },
   methods: {
-    selectUserAddress(id, isEdit) {  
-      this.editAddress(id, isEdit);
-      this.$router.back();
+    selectAddress(id) {  // 点击设置默认按钮
+      this.addressID = id;
+      this.$refs.confirm.show();
     },
-    editAddress(id, isEdit) {  // 查看某条地址
-      Address.selectAddress(id).then(res => {  
+    setDefaultAddress() {  // 设置默认确定
+      Address.selectAddress(this.addressID).then(res => {
         const data = res.data;
-        if(isEdit) {  //如果是编辑按钮不保存
-          this.isEdit = true;
-          this.showNewCreateAddressMask();
-          this.maskTitle = '编辑地址';
-          this.addressID = id;
-          this.name = data.receiverName;
-          this.province = data.receiverProvince;
-          this.city = data.receiverCity;
-          this.address = data.receiverAddress;
-          this.phone = data.receiverPhone;
-          this.provincesSelect(true);
-        } else if(!isEdit) {  // 选中保存到vuex
-          this.saveAddressInfo({
-            name: data.receiverName,
-            province: data.receiverProvince,
-            city: data.receiverCity,
-            address: data.receiverAddress,
-            phone: data.receiverPhone,
-            id
-          })
-        }
+        this.saveAddressInfo({
+          name: data.receiverName,
+          province: data.receiverProvince,
+          city: data.receiverCity,
+          address: data.receiverAddress,
+          phone: data.receiverPhone,
+          id: this.addressID
+        });
       })
     },
-    deleteAddress(id) {  // 删除某条地址
-       Address.deleteAddress(id).then(res => {
-        this.$notice('删除地址成功');
-        this._getAddressList();
-      });
+    editAddress(id) {  // 编辑地址按钮
+      Address.selectAddress(id).then(res => {   // 回填地址信息
+        this.isEdit = true;
+        const data = res.data;
+        this.isShowMask = true;
+        this.provincesList.push(...getProvinces());
+        this.maskTitle = '编辑地址';
+        this.addressID = id;
+        this.name = data.receiverName;
+        this.province = data.receiverProvince;
+        this.city = data.receiverCity;
+        this.address = data.receiverAddress;
+        this.phone = data.receiverPhone;
+        this.provincesSelect(true);
+      })
     },
-    saveNewAddress() {  // 创建地址
-      if(this.validationInfo() && !this.isEdit) {
+    createAddress() {  // 新建地址按钮
+      this.isEdit = false;
+      this.isShowMask = true;
+      this.maskTitle = '新建地址';
+      this.provincesList.push(...getProvinces());
+    },
+    saveAddressInfoBtn() {  // 保存地址按钮
+      if(this.validationInfo() && !this.isEdit) { // 创建地址
         Address.addAddress({
           receiverName: this.name,
           receiverPhone: this.phone,
@@ -155,10 +164,9 @@ export default {
           this._getAddressList();
           setTimeout(() => {
             this.hideMask();
-          }, 1500);
+          }, 1000);
         })
-      } else if (this.validationInfo() && this.isEdit){  // 更新地址
-        this.isEdit = false;
+      } else if (this.validationInfo() && this.isEdit) {  // 更新地址
         Address.updateAddress({
           id: this.addressID,
           receiverName: this.name,
@@ -171,9 +179,17 @@ export default {
           this._getAddressList();
           setTimeout(() => {
             this.hideMask();
-          }, 1500);
+          }, 1000);
         })
       }
+    },
+    deleteAddress(id) {  // 删除某条地址
+       Address.deleteAddress(id).then(res => {
+        this.$notice('删除地址成功');
+        this._getAddressList();
+        console.log(id);
+        this.removeAddress(id);
+      });
     },
     validationInfo() {
       if(this.name === '') {
@@ -198,17 +214,12 @@ export default {
       }
       return true;
     },
-    provincesSelect(isEdit) {
+    provincesSelect(isEdit) { // 城市选择
       this.citiesList = ['请选择'];
       this.citiesList.push(...getCities(this.province));
       if(this.city !== '请选择' && !isEdit) {
         this.city = '请选择';
       }
-    },
-    showNewCreateAddressMask() {
-      this.isShowMask = true;
-      this.maskTitle = '新建地址';
-      this.provincesList.push(...getProvinces());
     },
     hideMask() {
       this.isShowMask = false;
@@ -220,12 +231,7 @@ export default {
       
     },
     back() {
-      if(this.$router.history.current.path === '/add-address') {
-        this.$router.push('/mycenter');
-      } else {
-        this.$router.back();
-      }
-      console.log(this.$router.history.current.name)
+      this.$router.back();
     },
     _getAddressList() {  //获取地址列表
       Address.getAddressList().then(res => {
@@ -233,8 +239,12 @@ export default {
       })
     },
     ...mapMutations({
-      saveAddressInfo: 'SAVE_ADDRESS_INFO'
-    })
+      saveAddressInfo: 'SAVE_ADDRESS_INFO',
+      saveAddressId: 'SET_ADDRESS_ID'
+    }),
+    ...mapActions([
+      'removeAddress'
+    ])
   },
   watch: {
     'infoList.list': function(newList) {  // 如果没有地址 清空vuex的地址
@@ -247,7 +257,8 @@ export default {
     Scroll,
     transBase,
     RedTitle,
-    Loading
+    Loading,
+    Confirm
   }
 }
 </script>

@@ -13,7 +13,7 @@
     <transition-group name='fade'>
       <div class='input-wrap' v-show='showFirstStep' key='username'> <!-- 第一步 -->
         <div class='input-item'>
-          <input class='input' v-model.trim='username' type="text" placeholder="用户名">
+          <input class='input' v-model.trim='username' type="text" ref='firstInput' placeholder="用户名">
           <span class='cancel-input' @click='removeInputInfo("username")' v-show='username && username.length > 0'>x</span>
         </div>
         <div class='login-btn' @click='goSecondStep' :style='inputStatus'>下一步</div>
@@ -21,14 +21,14 @@
       <div class='input-wrap' v-show='showSecondStep' key='answer'> <!-- 第二步 -->
         <p class='tips-text'>提示问题是：<span>{{question}}</span></p>
         <div class='input-item'>
-          <input class='input' v-model.trim='answer' type="text" placeholder="请输入密码提示答案">
+          <input class='input' v-model.trim='answer' type="text" ref='secondInput' placeholder="请输入密码提示答案">
           <span class='cancel-input' @click='removeInputInfo("answer")' v-show='answer && answer.length > 0'>x</span>
         </div>
         <div class='login-btn' @click='goThirdStep' :style='inputStatus'>下一步</div>
       </div>
       <div class='input-wrap' v-show='showThirdStep' key='newPassword'> <!-- 第三步 -->
         <div class='input-item'>
-          <input class='input' v-model.trim='newPassword' type="text" placeholder="请输入不少于6位的新密码">
+          <input class='input' v-model.trim='newPassword' type="password" ref='thirdInput' placeholder="请输入不少于6位的新密码">
           <span class='cancel-input' @click='removeInputInfo("newPwd")' v-show='newPassword && newPassword.length > 0'>x</span>
         </div>
         <div class='login-btn' @click='modifySuccess' :style='inputStatus'>完成</div>
@@ -54,6 +54,11 @@ export default {
       showThirdStep: false
     }
   },
+  mounted() {
+    setTimeout(() => {
+      this.$refs.firstInput.focus(); //输入框聚焦
+    }, 20);
+  },
   methods: {
     handleUserLogin() {
       if(this.username === '' || this.password === '') {
@@ -62,7 +67,7 @@ export default {
       userLogin({username: this.username,password: this.password}).then(res => {
         this.$router.back();
       }).catch(ex => {
-        this.$notice(ex);
+        this.$notice(ex.msg);
       })
     },
     goSecondStep() {  // 第一步
@@ -71,8 +76,11 @@ export default {
           this.question = res.data;
           this.showFirstStep = false;
           this.showSecondStep = true;
+          setTimeout(() => {
+            this.$refs.secondInput.focus();
+          }, 20)
         }).catch(ex => {
-          this.$notice(ex);
+          this.$notice(ex.msg);
         })
       }
     },
@@ -86,8 +94,11 @@ export default {
           this.token = res.data;
           this.showThirdStep = true;
           this.showSecondStep = false;
+          setTimeout(() => {
+            this.$refs.thirdInput.focus();
+          }, 20);
         }).catch(ex => {
-          this.$notice(ex);
+          this.$notice(ex.msg);
         })
       }
     },
@@ -104,7 +115,7 @@ export default {
             this.$router.go(-1);
           }, 800)
         }).catch(ex => {
-          this.$notice(ex);
+          this.$notice(ex.msg);
         })
       }
     },

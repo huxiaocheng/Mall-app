@@ -14,6 +14,7 @@ import AddAddress from 'pages/add-address/add-address';
 import PersonInfo from 'pages/person-info/person-info';
 import UpdatePwd from 'pages/update-pwd/update-pwd';
 import Intro from 'pages/intro/intro';
+import Pay from 'pages/pay/pay';
 
 Vue.use(Router)
 
@@ -103,7 +104,14 @@ export default new Router({
       component: Settlement,
       meta: {
         requireAuth: true
-      }
+      },
+      children: [
+        {
+          path: '/settlement/pay',
+          name: 'pay',
+          component: Pay
+        }
+      ]
     }, {
       path: '/add-address',  // 添加地址
       name: 'add-address',
