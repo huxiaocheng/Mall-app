@@ -4,7 +4,7 @@
     <p class='orderNo-number'>订单提交成功，请您尽快支付！<br/> 订单号：{{payInfo.orderNo}}</p>
     <p class='pay-tips'>请使用支付宝扫描如下二维码进行支付：</p>
     <div class='pay-qrcode'>
-      <img v-lazy="payInfo.qrUrl" alt="" />
+      <img :src="payInfo.qrUrl" alt="" />
     </div>
   </div>
 </template>
@@ -22,6 +22,7 @@ export default {
   created() {
     setTimeout(() => {
       this._getPayQRcode(this.$route.params.orderNo);
+      console.log(this.$route.params);
     }, 20);
   },
   methods: {

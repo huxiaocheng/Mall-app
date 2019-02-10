@@ -34,7 +34,7 @@
                 查看详情<i class='iconfont icon-more'>&#xe62f;</i>
               </div>
               <p class='price'>共计<span> {{item.payment}} </span>元</p>
-              <div class='order-pay' v-if='item.statusDesc === "未支付"'>
+              <div class='order-pay' v-if='item.statusDesc === "未支付"' @click='toPay(item.orderNo)'>
                 <p class='pay-btn'>去支付</p>
               </div>
             </div>
@@ -92,6 +92,14 @@ export default {
     this.$refs.scroll.refresh();
   },
   methods: {
+    toPay(orderNo) {
+      this.$router.push({
+        name: 'pay',
+        params: {
+          orderNo
+        }
+      })
+    },
     packUpDetail() {
       this.orderIndex = '';
     },

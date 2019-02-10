@@ -1,22 +1,97 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import ProductList from 'pages/product-list/product-list';
-import Home from 'pages/home/home';
-import MyCenter from 'pages/mycenter/mycenter';
-import ShopCart from 'pages/shopcart/shopcart';
-import ProductDetail from 'pages/product-detail/product-detail';
-import Login from 'pages/login/login';
-import Register from 'pages/register/register';
-import FindPwd from 'pages/find-pwd/find-pwd';
-import Order from 'pages/order/order';
-import Settlement from 'pages/settlement/settlement';
-import AddAddress from 'pages/add-address/add-address';
-import PersonInfo from 'pages/person-info/person-info';
-import UpdatePwd from 'pages/update-pwd/update-pwd';
-import Intro from 'pages/intro/intro';
-import Pay from 'pages/pay/pay';
 
 Vue.use(Router)
+
+const ProductList = (resolve => {
+  import('pages/product-list/product-list').then(module => {
+    resolve(module)
+  })
+})
+
+const Home = (resolve => {
+  import('pages/home/home').then(module => {
+    resolve(module)
+  })
+})
+
+const MyCenter = (resolve => {
+  import('pages/mycenter/mycenter').then(module => {
+    resolve(module)
+  })
+})
+
+const ShopCart = (resolve => {
+  import('pages/shopcart/shopcart').then(module => {
+    resolve(module)
+  })
+})
+
+const ProductDetail = (resolve => {
+  import('pages/product-detail/product-detail').then(module => {
+    resolve(module)
+  })
+})
+
+const Login = (resolve => {
+  import('pages/login/login').then(module => {
+    resolve(module)
+  })
+})
+
+const Register = (resolve => {
+  import('pages/register/register').then(module => {
+    resolve(module)
+  })
+})
+
+const FindPwd = (resolve => {
+  import('pages/find-pwd/find-pwd').then(module => {
+    resolve(module)
+  })
+})
+
+const Order = (resolve => {
+  import('pages/order/order').then(module => {
+    resolve(module)
+  })
+})
+
+const Settlement = (resolve => {
+  import('pages/settlement/settlement').then(module => {
+    resolve(module)
+  })
+})
+
+const AddAddress = (resolve => {
+  import('pages/add-address/add-address').then(module => {
+    resolve(module)
+  })
+})
+
+const PersonInfo = (resolve => {
+  import('pages/person-info/person-info').then(module => {
+    resolve(module)
+  })
+})
+
+const UpdatePwd = (resolve => {
+  import('pages/update-pwd/update-pwd').then(module => {
+    resolve(module)
+  })
+})
+
+const Intro = (resolve => {
+  import('pages/Intro/Intro').then(module => {
+    resolve(module)
+  })
+})
+
+const Pay = (resolve => {
+  import('pages/pay/pay').then(module => {
+    resolve(module)
+  })
+})
 
 export default new Router({
   routes: [
@@ -81,7 +156,16 @@ export default new Router({
     {
       path: '/login',  // 登录
       name: 'login',
-      component: Login
+      component: Login,
+      beforeEnter: (to, from, next) => {
+        if (from.fullPath === '/add-address') {
+          next({
+            path: '/mycenter'
+          });
+        } else {
+          next();
+        }
+      }
     },
     {
       path: '/register',  // 注册

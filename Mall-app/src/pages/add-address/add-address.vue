@@ -3,8 +3,8 @@
     <red-title @back='back' text='收货地址'/>
     <scroll class='create-address-wrap' :data='infoList.list'>
       <ul class='address-list'>
-        <li class='address-item' v-for='item in infoList.list' :key='item.id'>
-          <span class='icon-select' @click='selectAddress(item.id)' :class='{active: item.id === addressInfo.id}'>
+        <li class='address-item' v-for='(item, index) in infoList.list' :key='item.id'>
+          <span class='icon-select' @click='selectAddress(item.id, index)' ref='addressItem' :class='{active: item.id === addressInfo.id}'>
             <i class='iconfont'>&#xe605;</i>
           </span>
           <div class='info'>
@@ -82,6 +82,7 @@ import Loading from 'base/loading/loading';
 import Confirm from 'base/confirm/confirm';
 import { getProvinces, getCities } from 'common/js/cityinfo';
 import { mapMutations, mapGetters, mapActions } from 'vuex';
+import { hasClass } from 'common/js/dom';
 import * as Address from 'api/address';
 
 export default {
@@ -112,7 +113,10 @@ export default {
     ])
   },
   methods: {
-    selectAddress(id) {  // 点击设置默认按钮
+    selectAddress(id, index) {  // 点击设置默认按钮
+      if(hasClass(this.$refs.addressItem[index], 'active')) {
+        return;
+      }
       this.addressID = id;
       this.$refs.confirm.show();
     },
@@ -187,7 +191,6 @@ export default {
        Address.deleteAddress(id).then(res => {
         this.$notice('删除地址成功');
         this._getAddressList();
-        console.log(id);
         this.removeAddress(id);
       });
     },
@@ -245,13 +248,6 @@ export default {
     ...mapActions([
       'removeAddress'
     ])
-  },
-  watch: {
-    'infoList.list': function(newList) {  // 如果没有地址 清空vuex的地址
-      if(newList.length === 0) {
-        this.saveAddressInfo({});
-      }
-    }
   },
   components: {
     Scroll,
