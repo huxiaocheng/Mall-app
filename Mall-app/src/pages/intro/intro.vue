@@ -4,7 +4,9 @@
     <p>这是使用的Rosen老师PC端电商教程接口改写的web App</p>
     <p>源码分享给大家，互相交流。</p>
     <p>如果对你有什么帮助，还望给个Star~</p>
-    <a href="https://github.com/huxiaocheng/Mall-app">github项目地址</a>
+    <p>
+      <a href="https://github.com/huxiaocheng/Mall-app">github项目地址</a>
+    </p>
     <p>PC端网址: <a href='http://happymmall.com/index.html'>Happy-Mmall</a></p>
   </div>
 </template>
