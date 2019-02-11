@@ -26,7 +26,7 @@
       ref='scroll'
     >
       <div>
-        <slider :sliderDate='sliderDate'/>
+        <slider :sliderDate='sliderDate' ref='slider'/>
         <floor />
       </div>
     </scroll>
@@ -80,6 +80,7 @@ export default {
   },
   activated() {
     this.$refs.scroll.refresh();
+    this.$refs.slider.play();
   },
   methods: {
     inputEnter() {

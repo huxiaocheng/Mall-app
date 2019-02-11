@@ -22,7 +22,6 @@ export default {
   created() {
     setTimeout(() => {
       this._getPayQRcode(this.$route.params.orderNo);
-      console.log(this.$route.params);
     }, 20);
   },
   methods: {

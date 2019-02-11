@@ -161,7 +161,7 @@ export default {
       addProductToCart(this.$route.params.id, this.cartCount).then(res => {
         this.$refs.toCartConfrim.show();
       }).catch(ex => {
-        this.$notice(ex.msg);
+        this.$router.push('/login');
       })
     },
     handleCartCount(num) {

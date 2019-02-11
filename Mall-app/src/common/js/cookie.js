@@ -3,7 +3,6 @@ export function setCookie(key, value, day) {
   d.setTime(d.getTime() + (day * 24 * 60 * 60 * 1000));
   const expires = "expires=" + d.toUTCString();
   document.cookie = `${key}=${value};${expires}; path=/`;
-  console.log(d)
 }
 
 export function getCookie(name) {
