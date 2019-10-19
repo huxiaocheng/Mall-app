@@ -67,7 +67,6 @@ export default {
   name: 'product-list',
   data() {
     return {
-      sortBtns: ['综合','价格升序','价格降序'],
       sortIndex: 0,
       list: [],
       hasMore: true,
@@ -81,6 +80,7 @@ export default {
   },
   created() {
     this.pullup = true;
+    this.sortBtns = ['综合','价格升序','价格降序'];
     setTimeout(() => {
       this.getParams.keyword = this.keyword;
       this._getProductlist(this.getParams);

@@ -2,7 +2,8 @@
   <div class='intro-wrap'>
     <red-title text='关于MMall' @back='back'/>
     <p>真实接口，根据慕课网已有PC电商项目接口而写</p>
-    <p>PC端网址: <a href='http://happymmall.com/index.html'>Happy-Mmall</a></p>
+    <p>使用vue全家桶，没有使用UI框架，所有样式和功能全部为手写</p>
+    <p>PC端网址: <a target="_blank" href='http://happymmall.com/index.html'>Happy-Mmall</a></p>
   </div>
 </template>
 

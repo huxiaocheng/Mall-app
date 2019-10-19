@@ -56,10 +56,10 @@ export default {
         sessionStorage.setItem('token', 'mall_login_token');
         this.hideUsername();
         this.hidePassword();
-        if(!this.$router.history.current.query.redirect) {
+        if(!this.$route.query.redirect) {
           this.$router.push('/home');
         } else {
-          this.$router.push(this.$router.history.current.query.redirect);
+          this.$router.push(this.$route.query.redirect);
         }
       }).catch(ex => {
         this.$notice(ex.msg);
