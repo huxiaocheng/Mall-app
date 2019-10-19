@@ -31,14 +31,12 @@
       <div class='logout' v-if='username !== ""' @click='userLogout'>退出登录</div>
     </trans-base>
   </div>
-  <confirm @confirm='confirm' ref='confirm' title='确定退出登录？'/>
   <router-view/>
 </div>
 </template>
 
 <script>
 import { logout, getUserInfo } from 'api/user';
-import Confirm from 'base/confirm/confirm';
 import TransBase from 'base/transition-base/transition-base';
 
 export default {
@@ -61,18 +59,18 @@ export default {
       }
     },
     userLogout() {
-      this.$refs.confirm.show();
-    },
-    confirm() {
-      logout().then(res => {
-        this.username = '';
-        sessionStorage.removeItem('token');
+      this.$Confirm({
+        title: '确认退出登录?'
+      }).then(() => {
+        logout().then(res => {
+          this.username = '';
+          sessionStorage.removeItem('token');
+        });
       });
     }
   },
   components: {
-    TransBase,
-    Confirm
+    TransBase
   }
 }
 </script>

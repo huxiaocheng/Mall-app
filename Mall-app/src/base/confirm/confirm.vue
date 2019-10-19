@@ -1,56 +1,55 @@
 <template>
   <div>
-    <transition name='confirm-fade'>
-      <div class='confirm' v-show='isShow'>
-        <div class='confirm-wrap'>
-          <div class='confirm-content'>
-            <p class='text'>{{title}}</p>
-            <div class='operate'>
-              <div class='operate-btn' @click='hide'>{{cancelBtn}}</div> 
-              <div class='operate-btn left' @click='confirm'>{{confirmBtn}}</div> 
-            </div>  
-          </div>   
-        </div> 
-      </div> 
+    <transition name="confirm-fade">
+      <div class="confirm" v-show="showFlag">
+        <div class="confirm-wrap">
+          <div class="confirm-content">
+            <p class="text">{{title}}</p>
+            <div class="operate">
+              <div class="operate-btn" @click="hide">{{cancelBtn}}</div>
+              <div class="operate-btn left" @click="confirm">{{confirmBtn}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </transition>
   </div>
 </template>
 
 <script>
 export default {
-  props: {
-    cancelBtn: {
-      type: String,
-      default: '取消'
-    },
-    confirmBtn: {
-      type: String,
-      default: '确认'
-    },
-    title: {
-      type: String,
-      default: '确认删除全部历史记录?'
-    }
-  },
   data() {
     return {
-      isShow: false
-    }
+      showFlag: false,
+      cancelBtn: "取消",
+      confirmBtn: "确认",
+      title: "确认删除全部历史记录?"
+    };
   },
   methods: {
-    show() {
-      this.isShow = true;
+    show(cb) {
+      this.showFlag = true;
+      typeof cb === "function" && cb.call(this, this);
+      return new Promise((resolve, reject) => {
+        this.reject = reject;
+        this.resolve = resolve;
+      });
     },
-    hide() {
-      this.$emit('cancel');
-      this.isShow = false;
+    cancel() {
+      this.reject();
+      this.hide();
     },
     confirm() {
-      this.$emit('confirm');
+      this.resolve();
       this.hide();
+    },
+    hide() {
+      this.showFlag = false;
+      document.body.removeChild(this.$el);
+      this.$destroy();
     }
   }
-}
+};
 </script>
 
 <style scoped lang='scss'>
@@ -72,7 +71,7 @@ export default {
     position: absolute;
     top: 50%;
     left: 50%;
-    z-index: 100;
+    z-index: 999;
     transform: translate(-50%, -50%);
     .confirm-content {
       width: 270px;
@@ -99,29 +98,29 @@ export default {
           &.left {
             color: #fff;
             background: #ef5050;
-          } 
+          }
         }
       }
     }
   }
 }
-  @keyframes confirmFadein {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1; 
-    }
+@keyframes confirmFadein {
+  0% {
+    opacity: 0;
   }
-  @keyframes confirmZoom {
-    0% {
-      transform: scale(0);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
+  100% {
+    opacity: 1;
   }
+}
+@keyframes confirmZoom {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 </style> 

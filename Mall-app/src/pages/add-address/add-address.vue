@@ -70,7 +70,6 @@
         </div>
       </div>
     </trans-base>
-    <confirm title='设置为默认地址？' @confirm='setDefaultAddress' ref='confirm' />
   </div>
 </template>
 
@@ -79,7 +78,6 @@ import Scroll from 'base/scroll/scroll';
 import transBase from 'base/transition-base/transition-base';
 import RedTitle from 'base/red-title/red-title';
 import Loading from 'base/loading/loading';
-import Confirm from 'base/confirm/confirm';
 import { getProvinces, getCities } from 'common/js/cityinfo';
 import { mapMutations, mapGetters, mapActions } from 'vuex';
 import { hasClass } from 'common/js/dom';
@@ -118,8 +116,12 @@ export default {
         return;
       }
       this.addressID = id;
-      this.$refs.confirm.show();
-    },
+      this.$Confirm({
+        title: '是否设置为默认地址?'
+      }).then(() => {
+        this.setDefaultAddress();
+      })
+    }, 
     setDefaultAddress() {  // 设置默认确定
       Address.selectAddress(this.addressID).then(res => {
         const data = res.data;
@@ -253,8 +255,7 @@ export default {
     Scroll,
     transBase,
     RedTitle,
-    Loading,
-    Confirm
+    Loading
   }
 }
 </script>

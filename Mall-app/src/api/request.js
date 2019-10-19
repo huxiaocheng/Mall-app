@@ -1,7 +1,7 @@
 import axios from 'axios';
 import qs from 'qs';
 
-export const require = axios.create({
+const require = axios.create({
   baseURL: '',
   timeout: 60000
 });
@@ -31,3 +31,5 @@ require.interceptors.response.use(response => {
 }, err => {
   return Promise.reject(err);
 })
+
+export default require;

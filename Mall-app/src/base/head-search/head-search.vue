@@ -39,14 +39,12 @@
         </div>
       </scroll>  
     </transi-base>  
-    <confirm ref='confirm' @confirm='confirm'/>
   </div>
 </template>
 
 <script>
 import Scroll from 'base/scroll/scroll';
 import TransiBase from 'base/transition-base/transition-base';
-import Confirm from 'base/confirm/confirm';
 import { mapMutations, mapGetters, mapActions } from 'vuex';
 
 export default {
@@ -96,7 +94,11 @@ export default {
     },
     deleteHistory() {
       if (this.historyList.length > 0) {
-        this.$refs.confirm.show();
+        this.$Confirm({
+          title: '删除所有搜索记录？'
+        }).then(res => {
+          this.confirm();
+        }).catch(err => {});
       } else {
         this.$notice('还没有搜索历史~');
       }
@@ -127,8 +129,7 @@ export default {
   },
   components: {
     Scroll,
-    TransiBase,
-    Confirm
+    TransiBase
   }
 }
 </script>

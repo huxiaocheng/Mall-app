@@ -60,7 +60,6 @@
         <loading></loading>
       </div>
     </scroll>
-    <confirm ref='confirm' @confirm='confrim' title='确认取消订单吗？'/>
   </div>
 </template>
 
@@ -68,7 +67,6 @@
 import Loading from 'base/loading/loading';
 import Scroll from 'base/scroll/scroll';
 import { getOrderList, cancelOrder } from 'api/order';
-import Confirm from 'base/confirm/confirm';
 
 export default {
   name: 'order',
@@ -108,13 +106,21 @@ export default {
       this.$refs.scroll.refresh();
     },
     selectOrderType(index) {
+      if(!this.orderList.length) {
+        this.$notice('还没有订单');
+        return;
+      }
       this.curIndex = index;
       this.isNoMore = false;
       this._getOrderList();
     },
     cancelCurOrder(num) {
       this.orderNum = num;
-      this.$refs.confirm.show();
+      this.$Confirm({
+        title: '确认取消订单吗？'
+      }).then(() => {
+        this.confrim();
+      });
     },
     confrim() {
       cancelOrder(this.orderNum).then(res => {
@@ -126,7 +132,7 @@ export default {
       })
     },
     _orderType(list, type) {
-      if(list && list.length > 0) {
+      if(list.length) {
         return list.filter(v => {
           return v.statusDesc === type;
         })
@@ -154,8 +160,7 @@ export default {
   },
   components: {
     Scroll,
-    Loading,
-    Confirm
+    Loading
   }
 }
 </script>
